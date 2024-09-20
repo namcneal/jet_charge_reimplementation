@@ -1,37 +1,14 @@
-from energyflow import p4s_from_ptyphipids
 import numpy as np
 
+from Jets import Particle, Jet 
 
-class Particle(object):
-    @classmethod
-    def from_pythia_line(self, line):
-        line = line.split(',')
+def particle_from_pythia_line(line):
+    line = line.split(',')
 
-        data = np.array([float(x) for x in line[0:-1]])
-        pid  = int(line[-1])
+    data = np.array([float(x) for x in line[0:-1]])
+    pid  = int(line[-1])
 
-        return Particle(*data, pid)
-
-    def __init__(self, eta, phi, pt, E, id):
-        self.id  = id
-        
-        self.eta = eta
-        self.phi = phi
-        self.pt  = pt
-        self.E   = E
-
-        self.p   =  p4s_from_ptyphipids([pt, eta, phi, id])
-
-    def charge(self):
-        energyflow.pids2chrgs([self.id])
-
-class Jet(object):
-    def __init__(self):
-        self.particles = []
-
-    def add_particle_from_pythia_line(self, line):
-        self.particles.append(Particle.from_pythia_line(line))
-
+    return Particle(*data, pid)
 
 def jets_from_pythia_txt(filename):
     jets = []
@@ -42,14 +19,19 @@ def jets_from_pythia_txt(filename):
     inside_jet = False
     for line in lines:
         if line[0:5] == "Event":
-            jets.append(Jet())
             inside_jet = True
+
+            line = line.split(',')
+            jet_data = [float(num) for num in line[1:4]]
+            jets.append(Jet(*jet_data))
+
+
 
         elif line in ('\n', '\r\n'): 
             inside_jet = False
             
         elif inside_jet:
-            jets[-1].add_particle_from_pythia_line(line)
+            jets[-1].particles.append(particle_from_pythia_line(line))
 
 
     return jets 
