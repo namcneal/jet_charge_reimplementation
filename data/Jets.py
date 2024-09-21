@@ -15,11 +15,8 @@ class Particle(object):
         energyflow.pids2chrgs([self.id])
 
 class Jet(object):
-    def __init__(self, phi, eta, total_pt):
+    def __init__(self, eta, phi, total_pt):
         self.particles = []
-        self.phi       = phi
         self.eta       = eta
-        self.total_pt  = total_pt   
-
-    def add_particle_from_pythia_line(self, line):
-        self.particles.append()
+        self.phi       = phi
+        self.total_pt  = total_pt
