@@ -12,7 +12,7 @@ class Particle(object):
         self.p   =  energyflow.p4s_from_ptyphipids([pt, eta, phi, id])
 
     def charge(self):
-        energyflow.pids2chrgs([self.id])
+        return energyflow.pids2chrgs([self.id])
 
 class Jet(object):
     def __init__(self, eta, phi, total_pt):
