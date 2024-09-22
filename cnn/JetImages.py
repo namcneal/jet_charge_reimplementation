@@ -14,52 +14,68 @@ class JetImage(object):
     variable_range = np.linspace(-image_width, image_width, pixels_per_dim)
 
     @classmethod
-    def empty_channel(cls):
-        return np.zeros((cls.pixels_per_dim, cls.pixels_per_dim))
-    
-    def __init__(self, jet: Jet):
-        self.jet = jet
+    def normalized_two_channel_image(cls, jet:Jet, kappa:float):
+        particle_bins = list(cls.sort_particles_into_bins(jet))
 
-    def create_image(self, kappa):
-        particle_bins = list(self.sort_particles_into_bins())
-
-        first_channel = self.cumululative_pt_channel(particle_bins)
-        second_channel = self.pt_weighted_jetcharge_channel(particle_bins, kappa)
+        first_channel  = cls.cumululative_pt_channel(jet, particle_bins)
+        second_channel = cls.pt_weighted_jetcharge_channel(jet, particle_bins, first_channel, kappa)
 
         return np.stack([first_channel, second_channel])
+    
+    @classmethod
+    def normalize_channel(cls, channel, channel_name):
+        if np.abs(np.sum(channel, axis=None)) < 1e-5:
+            raise ValueError("The {} channel has  summed to {}. Cannot normalize to 1.".format(channel_name, np.sum(channel, axis=None)))
+        
+        return channel / np.sum(channel, axis=None)
 
-    def pt_weighted_jetcharge_channel(self, particle_bins:list, kappa):
+    @classmethod
+    def pt_weighted_jetcharge_channel(cls, jet:Jet, particle_bins, cumulative_pt_channel:np.ndarray, kappa:float):
         channel = JetImage.empty_channel()
 
-        for particle_idx, particle in enumerate(self.jet.particles):
+        for particle_idx, particle in enumerate(jet.particles):
             eta_bin, phi_bin = particle_bins[particle_idx]
 
             channel[eta_bin, phi_bin] += particle.charge() * particle.pt**kappa
 
-        return channel / self.jet.total_pt**kappa
+            # TODO: check if this is the correct way to normalize the pt-weighted jet charge for each bin
+            # One could also normalize using the jet's total pt
+            channel[eta_bin, phi_bin] /= cumulative_pt_channel[eta_bin, phi_bin]
 
-    def cumululative_pt_channel(self, particle_bins:list):
+        return channel
+    
+        # return cls.normalize_channel(channel, "Charge")
+
+    @classmethod
+    def cumululative_pt_channel(cls, jet:Jet, particle_bins:list):
         channel = JetImage.empty_channel()
 
-        for particle_idx, particle in enumerate(self.jet.particles):
+        for particle_idx, particle in enumerate(jet.particles):
             eta_bin, phi_bin = particle_bins[particle_idx]
 
             channel[eta_bin, phi_bin] += particle.pt
 
-        return channel / self.jet.total_pt
+        channel /= jet.total_pt
 
-    def sort_particles_into_bins(self):
-        eta_range = JetImage.variable_range + self.jet.eta
-        phi_range = JetImage.variable_range + self.jet.phi
+        return channel
+        # return cls.normalize_channel(channel, "Pt")
+    
+    @classmethod
+    def empty_channel(cls):
+        return np.zeros((cls.pixels_per_dim, cls.pixels_per_dim))
 
-        all_eta = np.array([p.eta for p in self.jet.particles])
-        all_phi = np.array([p.phi for p in self.jet.particles])
+    @classmethod
+    def sort_particles_into_bins(cls, jet:Jet):
+        eta_range = JetImage.variable_range + jet.eta
+        phi_range = JetImage.variable_range + jet.phi
+
+        all_eta = np.array([p.eta for p in jet.particles])
+        all_phi = np.array([p.phi for p in jet.particles])
 
         # The -1 is to make the bins start at 0, and therefore 
-        # be compatible with the indexing of the image pixels
+        # be compatible with the indexing of the image
         eta_bins = np.digitize(all_eta, eta_range) - 1
         phi_bins = np.digitize(all_phi, phi_range) - 1
-        print(eta_bins)
 
         particle_bins = zip(eta_bins, phi_bins)
 
