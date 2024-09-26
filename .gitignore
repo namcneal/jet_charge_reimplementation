@@ -1,3 +1,7 @@
 *.txt
 *.pyc
 *.json
+
+.vscode/
+data/up_down/
+*/__pycache__/

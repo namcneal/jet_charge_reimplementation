@@ -25,8 +25,6 @@ def jets_from_pythia_txt(filename):
             jet_data = [float(num) for num in line[1:4]]
             jets.append(Jet(*jet_data))
 
-
-
         elif line in ('\n', '\r\n'): 
             inside_jet = False
             

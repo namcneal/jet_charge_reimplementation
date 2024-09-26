@@ -7,9 +7,9 @@ class Particle(object):
         self.eta = eta
         self.phi = phi
         self.pt  = pt
-        self.E   = E
+        # self.E   = E
 
-        self.p   =  energyflow.p4s_from_ptyphipids([pt, eta, phi, id])
+        # self.p   =  energyflow.p4s_from_ptyphipids([pt, eta, phi, id])
 
     def charge(self):
         return energyflow.pids2chrgs([self.id])

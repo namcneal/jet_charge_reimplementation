@@ -14,51 +14,65 @@ class JetImage(object):
     variable_range = np.linspace(-image_width, image_width, pixels_per_dim)
 
     @classmethod
-    def normalized_two_channel_image(cls, jet:Jet, kappa:float):
-        particle_bins = list(cls.sort_particles_into_bins(jet))
+    def two_channel_image(cls, jet:Jet, kappa:float):
+        # particle_bins = list()
 
-        first_channel  = cls.cumululative_pt_channel(jet, particle_bins)
-        second_channel = cls.pt_weighted_jetcharge_channel(jet, particle_bins, first_channel, kappa)
+        # first_channel  = cls.cumululative_pt_channel(jet, particle_bins)
+        # second_channel = cls.pt_weighted_jetcharge_channel(jet, particle_bins, first_channel, kappa)
+
+        first_channel  = cls.empty_channel()
+        partial_second_channel = cls.empty_channel()
+
+        for particle_idx, bin_edges in enumerate(cls.sort_particles_into_bins(jet)):
+            eta_bin, phi_bin = bin_edges
+
+            first_channel[eta_bin, phi_bin]          += jet.particles[particle_idx].pt
+            
+            partial_second_channel[eta_bin, phi_bin] += jet.particles[particle_idx].charge() * jet.particles[particle_idx].pt**kappa
+
+        # Complete the pt-weighted jet charge per bin 
+        # by dividing by the total pt in that bin (to the power of kappa)
+        second_channel = np.divide(partial_second_channel,  first_channel**kappa, where=(first_channel!=0))
 
         return np.stack([first_channel, second_channel])
     
-    @classmethod
-    def normalize_channel(cls, channel, channel_name):
-        if np.abs(np.sum(channel, axis=None)) < 1e-5:
-            raise ValueError("The {} channel has  summed to {}. Cannot normalize to 1.".format(channel_name, np.sum(channel, axis=None)))
+    # @classmethod
+    # def normalize_channel(cls, channel, channel_name):
+    #     if np.abs(np.sum(channel, axis=None)) < 1e-5:
+    #         raise ValueError("The {} channel has  summed to {}. Cannot normalize to 1.".format(channel_name, np.sum(channel, axis=None)))
         
-        return channel / np.sum(channel, axis=None)
+    #     return channel / np.sum(channel, axis=None)
 
-    @classmethod
-    def pt_weighted_jetcharge_channel(cls, jet:Jet, particle_bins, cumulative_pt_channel:np.ndarray, kappa:float):
-        channel = JetImage.empty_channel()
+    # @classmethod
+    # def pt_weighted_jetcharge_channel(cls, jet:Jet, particle_bins, cumulative_pt_channel:np.ndarray, kappa:float):
+    #     channel = JetImage.empty_channel()
 
-        for particle_idx, particle in enumerate(jet.particles):
-            eta_bin, phi_bin = particle_bins[particle_idx]
+    #     for particle_idx, particle in enumerate(jet.particles):
+    #         eta_bin, phi_bin = particle_bins[particle_idx]
 
-            channel[eta_bin, phi_bin] += particle.charge() * particle.pt**kappa
+    #         channel[eta_bin, phi_bin] += particle.charge() * particle.pt**kappa
 
-            # TODO: check if this is the correct way to normalize the pt-weighted jet charge for each bin
-            # One could also normalize using the jet's total pt
-            channel[eta_bin, phi_bin] /= cumulative_pt_channel[eta_bin, phi_bin]
+    #         # TODO: check if this is the correct way to normalize the pt-weighted jet charge for each bin
+    #         # One could also normalize using the jet's total pt
+    #         channel[eta_bin, phi_bin] /= cumulative_pt_channel[eta_bin, phi_bin]
 
-        return channel
+    #     return channel
     
-        # return cls.normalize_channel(channel, "Charge")
+    #     # return cls.normalize_channel(channel, "Charge")
 
-    @classmethod
-    def cumululative_pt_channel(cls, jet:Jet, particle_bins:list):
-        channel = JetImage.empty_channel()
+    # @classmethod
+    # def cumululative_pt_channel(cls, jet:Jet, particle_bins:list):
+    #     channel = JetImage.empty_channel()
 
-        for particle_idx, particle in enumerate(jet.particles):
-            eta_bin, phi_bin = particle_bins[particle_idx]
+    #     for particle_idx, particle in enumerate(jet.particles):
+    #         eta_bin, phi_bin = particle_bins[particle_idx]
 
-            channel[eta_bin, phi_bin] += particle.pt
+    #         channel[eta_bin, phi_bin] += particle.pt
 
-        channel /= jet.total_pt
+    #     channel /= jet.total_pt
 
-        return channel
-        # return cls.normalize_channel(channel, "Pt")
+    #     return channel
+    #     # return cls.normalize_channel(channel, "Pt")
     
     @classmethod
     def empty_channel(cls):
