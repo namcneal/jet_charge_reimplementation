@@ -1,9 +1,18 @@
+import os
 import sys
-sys.path.append('../data')
-from data_loading import Jet, Particle
+# sys
+# 
+# Get the absolute path of the higher directory
+higher_directories = [os.path.abspath(os.path.join(os.path.dirname(__file__), '..')), os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))]
+
+# Append the higher directory to sys.path
+for directory in higher_directories:
+    if directory not in sys.path: sys.path.append(directory)
+
+from Jets import Jet
+
 
 import numpy as np
-
 
 class JetImage(object):
     jet_radius = 0.4
@@ -15,65 +24,49 @@ class JetImage(object):
 
     @classmethod
     def two_channel_image(cls, jet:Jet, kappa:float):
-        # particle_bins = list()
-
-        # first_channel  = cls.cumululative_pt_channel(jet, particle_bins)
-        # second_channel = cls.pt_weighted_jetcharge_channel(jet, particle_bins, first_channel, kappa)
 
         first_channel  = cls.empty_channel()
-        partial_second_channel = cls.empty_channel()
+        second_channel = cls.empty_channel()
 
         for particle_idx, bin_edges in enumerate(cls.sort_particles_into_bins(jet)):
             eta_bin, phi_bin = bin_edges
 
             first_channel[eta_bin, phi_bin]          += jet.particles[particle_idx].pt
             
-            partial_second_channel[eta_bin, phi_bin] += jet.particles[particle_idx].charge() * jet.particles[particle_idx].pt**kappa
+            second_channel[eta_bin, phi_bin] += jet.particles[particle_idx].charge() * jet.particles[particle_idx].pt**kappa
 
         # Complete the pt-weighted jet charge per bin 
         # by dividing by the total pt in that bin (to the power of kappa)
-        second_channel = np.divide(partial_second_channel,  first_channel**kappa, where=(first_channel!=0))
+        second_channel /= jet.total_pt**kappa
 
-        return np.stack([first_channel, second_channel])
+        image = np.stack([first_channel, second_channel])
+
+        return image
     
-    # @classmethod
-    # def normalize_channel(cls, channel, channel_name):
-    #     if np.abs(np.sum(channel, axis=None)) < 1e-5:
-    #         raise ValueError("The {} channel has  summed to {}. Cannot normalize to 1.".format(channel_name, np.sum(channel, axis=None)))
+    @classmethod
+    def preprocess_many_images(cls, many_images:np.array):
+        assert len(many_images.shape) == 4, "The input must be a 4D array of shape (num_images, num_channels, pixels_per_dim, pixels_per_dim)"
         
-    #     return channel / np.sum(channel, axis=None)
+        # Normalize the whole image by the sum of its pixels in each channel
+        sums = np.sum(many_images, axis=(2,3), keepdims=True)
+        normalized = np.divide(many_images, sums, where=np.abs(sums) > 0)
 
-    # @classmethod
-    # def pt_weighted_jetcharge_channel(cls, jet:Jet, particle_bins, cumulative_pt_channel:np.ndarray, kappa:float):
-    #     channel = JetImage.empty_channel()
+        # Zero-center each channel's pixels by the corresponding average over all images
+        zero_centered = normalized - np.mean(normalized, axis=(0), keepdims=True)
 
-    #     for particle_idx, particle in enumerate(jet.particles):
-    #         eta_bin, phi_bin = particle_bins[particle_idx]
+        # Standardize each channel by the channel-standard-deviation over all images
+        for_noise_reduction = 1e-6
+        standardized = zero_centered /  (np.std(normalized, axis=(0), keepdims=True) + for_noise_reduction)
 
-    #         channel[eta_bin, phi_bin] += particle.charge() * particle.pt**kappa
-
-    #         # TODO: check if this is the correct way to normalize the pt-weighted jet charge for each bin
-    #         # One could also normalize using the jet's total pt
-    #         channel[eta_bin, phi_bin] /= cumulative_pt_channel[eta_bin, phi_bin]
-
-    #     return channel
+        return standardized
     
-    #     # return cls.normalize_channel(channel, "Charge")
+    @classmethod
+    def normalize_channel(cls, channel, channel_name):
+        if np.abs(np.sum(channel, axis=None)) < 1e-16:
+            raise ValueError("The {} channel has  summed to {}. Cannot normalize to 1.".format(channel_name, np.sum(channel, axis=None)))
+        
+        return channel / np.sum(channel, axis=None)
 
-    # @classmethod
-    # def cumululative_pt_channel(cls, jet:Jet, particle_bins:list):
-    #     channel = JetImage.empty_channel()
-
-    #     for particle_idx, particle in enumerate(jet.particles):
-    #         eta_bin, phi_bin = particle_bins[particle_idx]
-
-    #         channel[eta_bin, phi_bin] += particle.pt
-
-    #     channel /= jet.total_pt
-
-    #     return channel
-    #     # return cls.normalize_channel(channel, "Pt")
-    
     @classmethod
     def empty_channel(cls):
         return np.zeros((cls.pixels_per_dim, cls.pixels_per_dim))
