@@ -1,7 +1,14 @@
-*.txt
-*.pyc
 *.json
+*.npy
+*.png
+*.pyc
+*.pth
+*.txt
+
 
 .vscode/
 data/up_down/
+cnn/training_logs/
+cnn/image_data/
 */__pycache__/
+*__init__.py

@@ -12,18 +12,63 @@ for directory in higher_directories:
 from Jets import Jet
 
 
+import matplotlib.pyplot as plt
 import numpy as np
 
+"""
+This class is responsible for generating images from jets.
+"""
 class JetImage(object):
     jet_radius = 0.4
-    image_width = 2*jet_radius
 
-    pixels_per_dim = 33
+    pixels_per_dim     = 33
 
-    variable_range = np.linspace(-image_width, image_width, pixels_per_dim)
+    variable_range = np.linspace(-2*jet_radius, 2*jet_radius, pixels_per_dim)
+
+    @classmethod 
+    def augment_many_images(cls, image_set:np.array):
+        assert len(image_set.shape) == 4, "The input has shape: {}. It must be a 4D array".format(image_set.shape)
+
+        all_augments = [np.zeros_like(image_set) for _ in range(7)] 
+
+        # The three reflections of the image: horizontal, vertical, and both
+        all_augments[0] = image_set[:,:, :, ::-1]
+        all_augments[1] = image_set[:,:, ::-1, :]
+        all_augments[2] = image_set[:,:, ::-1, ::-1]
+
+        # The four translations of the image
+        all_augments[3][:, :, 1:,  :] = image_set[:, :, 1:, :] 
+        all_augments[4][:, :, :-1, :] = image_set[:,:, :-1, :]
+        all_augments[5][:, :, :,  1:] = image_set[:,:, :, :-1]
+        all_augments[6][:, :, :, :-1] = image_set[:,:, :, 1:]
+
+        return np.concatenate([image_set] + all_augments, axis=0)
+    
+    @classmethod
+    def preprocess_a_channel(cls, many_images:np.array, channel_idx:int):
+        if len(many_images.shape) == 4:
+            ...
+            # print("The input has shape: ", many_images.shape)   
+        else:
+            raise ValueError("The input has shape: {}. It must be a 4D array".format(many_images.shape))
+        
+        # L1 normalization
+        sums = np.sum(many_images[:,channel_idx,:,:], axis=(1,2), keepdims=True)
+        many_images[:, channel_idx, :,:] = np.divide(many_images[:,channel_idx,:,:], sums, where= np.abs(sums) > 0)
+
+        # Zero centering
+        mean = np.mean(many_images[:,channel_idx,:,:], axis=(0), keepdims=True)
+        many_images[:, channel_idx, :,:] -= mean
+
+        # Rescaling by the standard deviation
+        for_numerical_stability = 1e-6
+        std  = np.std(many_images[:,channel_idx,:,:],  axis=(0), keepdims=True) + for_numerical_stability  
+        many_images[:, channel_idx, :,:] = np.divide(many_images[:,channel_idx,:,:], std, where= np.abs(std) > 0)
+
+        return many_images
 
     @classmethod
-    def two_channel_image(cls, jet:Jet, kappa:float):
+    def two_channel_image_from_jet(cls, jet:Jet, kappa:float):
 
         first_channel  = cls.empty_channel()
         second_channel = cls.empty_channel()
@@ -31,58 +76,47 @@ class JetImage(object):
         for particle_idx, bin_edges in enumerate(cls.sort_particles_into_bins(jet)):
             eta_bin, phi_bin = bin_edges
 
-            first_channel[eta_bin, phi_bin]          += jet.particles[particle_idx].pt
-            
-            second_channel[eta_bin, phi_bin] += jet.particles[particle_idx].charge() * jet.particles[particle_idx].pt**kappa
+            first_channel[eta_bin,  phi_bin] += jet.get_particle_pts()[particle_idx]
 
-        # Complete the pt-weighted jet charge per bin 
-        # by dividing by the total pt in that bin (to the power of kappa)
-        second_channel /= jet.total_pt**kappa
+            second_channel[eta_bin, phi_bin] += jet.get_particle_charges()[particle_idx] * jet.get_particle_pts()[particle_idx] ** kappa 
+
+        second_channel /= jet.get_pt() ** kappa
 
         image = np.stack([first_channel, second_channel])
 
         return image
     
     @classmethod
-    def preprocess_many_images(cls, many_images:np.array):
-        assert len(many_images.shape) == 4, "The input must be a 4D array of shape (num_images, num_channels, pixels_per_dim, pixels_per_dim)"
-        
-        # Normalize the whole image by the sum of its pixels in each channel
-        sums = np.sum(many_images, axis=(2,3), keepdims=True)
-        normalized = np.divide(many_images, sums, where=np.abs(sums) > 0)
+    def one_channel_image(cls, jet:Jet, kappa:float):
+        first_channel = cls.empty_channel()
 
-        # Zero-center each channel's pixels by the corresponding average over all images
-        zero_centered = normalized - np.mean(normalized, axis=(0), keepdims=True)
+        for particle_idx, bin_edges in enumerate(cls.sort_particles_into_bins(jet)):
+            eta_bin, phi_bin = bin_edges
 
-        # Standardize each channel by the channel-standard-deviation over all images
-        for_noise_reduction = 1e-6
-        standardized = zero_centered /  (np.std(normalized, axis=(0), keepdims=True) + for_noise_reduction)
+            first_channel[eta_bin, phi_bin] += jet.get_particle_pts()[particle_idx]
 
-        return standardized
+        image = np.stack([first_channel]) 
+
+        return image
     
-    @classmethod
-    def normalize_channel(cls, channel, channel_name):
-        if np.abs(np.sum(channel, axis=None)) < 1e-16:
-            raise ValueError("The {} channel has  summed to {}. Cannot normalize to 1.".format(channel_name, np.sum(channel, axis=None)))
-        
-        return channel / np.sum(channel, axis=None)
+    
 
     @classmethod
-    def empty_channel(cls):
-        return np.zeros((cls.pixels_per_dim, cls.pixels_per_dim))
+    def empty_channel(cls, dtype=np.float32):
+        return np.zeros((cls.pixels_per_dim, cls.pixels_per_dim), dtype=dtype)
 
     @classmethod
     def sort_particles_into_bins(cls, jet:Jet):
-        eta_range = JetImage.variable_range + jet.eta
-        phi_range = JetImage.variable_range + jet.phi
-
-        all_eta = np.array([p.eta for p in jet.particles])
-        all_phi = np.array([p.phi for p in jet.particles])
+        if jet.get_num_particles() == 0:
+            raise ValueError("The jet has no particles to sort into bins")
+        
+        eta_range = JetImage.variable_range + jet.get_eta()
+        phi_range = JetImage.variable_range + jet.get_phi()
 
         # The -1 is to make the bins start at 0, and therefore 
         # be compatible with the indexing of the image
-        eta_bins = np.digitize(all_eta, eta_range) - 1
-        phi_bins = np.digitize(all_phi, phi_range) - 1
+        eta_bins = np.digitize(jet.get_particle_etas(), eta_range) - 1
+        phi_bins = np.digitize(jet.get_particle_phis(), phi_range) - 1
 
         particle_bins = zip(eta_bins, phi_bins)
 
