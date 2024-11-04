@@ -4,9 +4,9 @@ class ConvolutionalLayer(torch.nn.Module):
     def __init__(self, num_channels, num_kernels, filter_size, dropout):
         super().__init__()
 
-        self.units = torch.nn.Conv2d(num_channels, num_kernels, kernel_size=filter_size)
+        self.units  = torch.nn.Conv2d(num_channels, num_kernels, kernel_size=filter_size)
         self.weight = self.units.weight
-        self.bias = self.units.bias
+        self.bias   = self.units.bias
 
         self.conv_activation = torch.nn.ReLU()
         self.max_pooling     = torch.nn.MaxPool2d(kernel_size=2)
@@ -23,9 +23,9 @@ class PostConvDenseLayer(torch.nn.Module):
     def __init__(self, num_out, dropout=0.35):
         super().__init__()
 
-        self.units = torch.nn.LazyLinear(num_out)
+        self.units  = torch.nn.LazyLinear(num_out)
         self.weight = self.units.weight
-        self.bias = self.units.bias
+        self.bias   = self.units.bias
 
         self.dense_activation = torch.nn.ReLU()
         self.dropout = torch.nn.Dropout(p=dropout)
@@ -35,7 +35,6 @@ class PostConvDenseLayer(torch.nn.Module):
         x = self.units(x)
         x = self.dense_activation(x)
         return x
-    
 
 class CNN(torch.nn.Module):
     def __init__(self, num_input_channels):
@@ -73,15 +72,12 @@ class CNN(torch.nn.Module):
         dummy_image = torch.zeros((1, num_input_channels, 33, 33))
         self.layers(dummy_image)
 
-        for layer in self.layers:
-            ...
+        # for layer in self.layers:
             # torch.nn.init.xavier_normal_(layer.weight)
             # torch.nn.init.normal_(layer.bias)
 
             # torch.nn.init.xavier_uniform_(layer.weight)
             # torch.nn.init.uniform_(layer.bias)
-
-        # torch.nn.Sequential(*self.layers)
 
     def forward(self, x):
         return self.layers(x)

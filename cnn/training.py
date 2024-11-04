@@ -1,12 +1,13 @@
-from Model import CNN
 import matplotlib.pyplot as plt
 from mmap_ninja import RaggedMmap
 import numpy as np
+import sys 
 import torch
-from torchvision import tv_tensors 
 
-
-PERCENT_TRAINING   = 80
+sys.path.append("../")
+from Model import CNN
+from JetsFromFile import JetsFromFile
+from JetImages import JetImage
 
 class CNNTrainer(object):
     def __init__(self, model):
@@ -25,80 +26,67 @@ class CNNTrainer(object):
         return loss
     
 import os
+from torch.utils.data import Dataset
+class DatasetFromMemmap(Dataset):
+    def __init__(self, image_memmap, label_memmap):
+        self.images = image_memmap
+        self.labels = label_memmap
 
-# from images_from_seed import output_group_file_name
+        if len(self.images) != len(self.labels):
+            raise ValueError("Number of images and labels must be the same.")
 
-def load_memmaps_for_seed(base_dir, seed_no):
-    image_memmap_filename = "seed{}-images".format(seed_no)
-    label_memmap_filename = "seed{}-labels".format(seed_no)
+    def __len__(self):
+        return len(self.images)
 
-    images = RaggedMmap(os.path.join(base_dir, image_memmap_filename))
-    labels = RaggedMmap(os.path.join(base_dir, label_memmap_filename))
+    def __getitem__(self, idx):
+        return (self.images[idx], self.labels[idx])
 
-    return images,labels
-
-def verify_all_memmap_entries(memmap:RaggedMmap, expected_num_entries:int=-1):
-    if expected_num_entries > 0:
-        if not len(memmap) == expected_num_entries:
-            raise ValueError("The number of entries in the memmap {} did not match the expected {}".format(len(memmap), expected_num_entries))
-        
-    for (idx, _) in enumerate(memmap):
-        try:
-            memmap[idx] 
-        except ValueError:
-            print("Error on index {}".format(idx))
-            print(memmap.shapes[idx])
-            print(memmap.sizes[idx])
-            raise ValueError("Error loading entry {} from memmap.".format(idx))
-
+    
 import gc
 from math import floor
-import torch.nn as nn
 import random
+import mmap_ninja
+from torch.utils.data import DataLoader, TensorDataset
 
-def main():
-    num_channels = 2
-    model = CNN(num_channels)
-
+def train_model(model:CNN, 
+                base_training_dir:str, augmented_training_dir:str, validation_dir:str,
+                results_dir:str,
+                num_epochs:int=35, batch_size:int=512, use_gpu:bool=True):
+    
     trainer   = CNNTrainer(model)
     optimizer = torch.optim.Adam(model.parameters(), lr=5e-3)
 
     use_gpu = True
     if use_gpu:
         torch.cuda.set_device(0) # Set the GPU to use
-        model = nn.DataParallel(model) # Wrap the model with DataParallel
+        model = torch.nn.DataParallel(model) # Wrap the model with DataParallel
         model = model.to('cuda') # Move the model to the GPU
-    print("Model created: ", model)
 
+    base_training_dataset = DatasetFromMemmap(
+        mmap_ninja.np_open_existing(os.path.join(base_training_dir, "images")),
+        mmap_ninja.np_open_existing(os.path.join(base_training_dir, "labels"))
+    )
 
-    # energy_gev = 100
-    # kappa      = 0.2
-    # print("\n== Training model for energy {} GeV and kappa {} ==".format(energy_gev, kappa))
+    augmented_dataset = DatasetFromMemmap(
+        mmap_ninja.np_open_existing(os.path.join(augmented_training_dir, "images")),
+        mmap_ninja.np_open_existing(os.path.join(augmented_training_dir, "labels"))
+    )
 
-    base_dir = os.path.join("d:", "up_down_batch_data")
-    num_seeds = 100
-    memmap_image_label_pairs = [load_memmaps_for_seed(base_dir, seed_no) for seed_no in range(1,num_seeds+1)]
+    full_training_dataset = torch.utils.data.ConcatDataset([base_training_dataset, augmented_dataset])
 
-    ENTRIES_PER_SEED = 313
-    for (images, labels) in memmap_image_label_pairs:
-        verify_all_memmap_entries(images,ENTRIES_PER_SEED)
-        verify_all_memmap_entries(labels,ENTRIES_PER_SEED)
+    validation_dataset = DatasetFromMemmap(
+        mmap_ninja.np_open_existing(os.path.join(validation_dir, "images")),
+        mmap_ninja.np_open_existing(os.path.join(validation_dir, "labels"))
+    )
 
-    num_batches = ENTRIES_PER_SEED
-    PERCENT_TRAINING = 80
+    print("Training with {} total images.".format(len(full_training_dataset)))
+    print("Of these, {} are in the base training set and {} are in the augmented set.".format(len(base_training_dataset), len(augmented_dataset)))
+    print("Validating with {} images.".format(len(validation_dataset)))
 
-    num_training_batches   = floor(num_batches * PERCENT_TRAINING / 100)
-    num_validation_batches = floor((num_batches - num_training_batches) / 2)
-    num_testing_batches    = num_batches - num_training_batches - num_validation_batches
+    BATCH_SIZE = 512 
+    training_dataloader   = DataLoader(full_training_dataset, batch_size=BATCH_SIZE, shuffle=True)
+    validation_dataloader = DataLoader(validation_dataset,    batch_size=BATCH_SIZE, shuffle=False)
 
-    print(f"Training groups: {num_training_batches}, Validation groups: {num_validation_batches}, Testing groups: {num_testing_batches}")
-
-    shuffled_batch_idxx = list(range(0, num_batches))
-    random.Random(0).shuffle(shuffled_batch_idxx)
-    training_idxx   = shuffled_batch_idxx[:num_training_batches]
-    validation_idxx = shuffled_batch_idxx[num_training_batches:num_batches-num_testing_batches]
-
-    logs_dir = "./training_logs/"
     each_batch_training_losses = []
 
     WINDOW = 20
@@ -106,119 +94,95 @@ def main():
     windowed_training_loss_recorded_at_epoch = []
 
     validation_loss_recorded_at_epoch = []
-    validation_losses = []
+    validation_losses    = []
     best_validation_loss = float('inf')
     best_model = None
 
-    BATCHES_PER_EPOCH = num_seeds * num_training_batches
-    num_epochs = 35
-    for epoch in range(1,num_epochs+1):
+    for epoch in range(num_epochs):
         print("\nStarting epoch {}/{}:".format(epoch+1, num_epochs))
 
-        num_batches_seen_this_epoch = 0
-        for idx in range(0, num_seeds):
-            print("Working on Epoch: {} | Seed No. {}:".format(epoch, idx+1))
+        for (training_batch_idx, (image_batch, label_batch)) in enumerate(training_dataloader):
+            images = image_batch.float()
+            labels = label_batch.float()
 
-            images_batches, labels_batches = memmap_image_label_pairs[idx]
+            if use_gpu:
+                images = image_batch.to('cuda')
+                labels = labels.to('cuda')
 
-            avg_percent_down_quarks = 0
-            for (i, training_batch_idx) in enumerate(training_idxx):
-                num_batches_seen_this_epoch += 1
+            optimizer.zero_grad()
+            output = model(images)
+            loss   = trainer.loss_function(output, labels)
 
-                images = torch.tensor(images_batches[training_batch_idx]).float()
-                labels = torch.nn.functional.one_hot(torch.tensor(labels_batches[training_batch_idx]).long(), 2).float()
-                avg_percent_down_quarks += torch.mean(labels[:,1]).item() 
-         
-                if use_gpu:
-                    images = images.to('cuda')
-                    labels = labels.to('cuda')
+            loss.backward()
+            optimizer.step()
 
-                optimizer.zero_grad()
-                output = model(images)
-                loss   = trainer.loss_function(output, labels)
+            each_batch_training_losses.append(loss.item()) 
+            windowed_training_losses.append(np.mean(each_batch_training_losses[-WINDOW:]))
 
-                each_batch_training_losses.append(loss.item()) 
-                windowed_training_losses.append(np.mean(each_batch_training_losses[-WINDOW:]))
-                percent_through_epoch = num_batches_seen_this_epoch / BATCHES_PER_EPOCH
-                windowed_training_loss_recorded_at_epoch.append(epoch - 1 + percent_through_epoch) 
+            percent_through_epoch = training_batch_idx / len(training_dataloader)
+            windowed_training_loss_recorded_at_epoch.append(epoch + percent_through_epoch)
 
-                if i % 50 == 0:
-                    print(f"\t\tEpoch {epoch} | Seed {idx+1} | Batch {i}/{num_training_batches} | Loss (bits): {loss / np.log(2)} | Last {WINDOW} Avg Loss: {windowed_training_losses[-1] / np.log(2)}")
+            if training_batch_idx % 200 == 0:
+                print(f"\tEpoch {epoch} | Batch {training_batch_idx}/{len(training_dataloader)} | Loss (bits): {loss / np.log(2)} | Last {WINDOW} Avg Loss: {windowed_training_losses[-1] / np.log(2)}")
 
-                loss.backward()
-                optimizer.step()
-            # End of training for this seed   
+                total_validation_loss = 0
+                for (validation_images, validation_labels) in validation_dataloader:
+                    with torch.no_grad():
+                        validation_images = validation_images.float()
+                        validation_labels = validation_labels.float()
 
-            avg_percent_down_quarks /= num_training_batches
+                        if use_gpu:
+                            validation_images = validation_images.to('cuda')
+                            validation_labels = validation_labels.to('cuda')
 
-            cumulative_validation_loss = 0
-            print("\tEstimating validation loss...")
-            for validation_batch_idx in validation_idxx:
+                        validation_output = model(validation_images)
+                        validation_batch_loss = trainer.loss_function(validation_output, validation_labels)
+                        total_validation_loss += validation_batch_loss.item()
+                # End of validation loop
 
-                images = torch.tensor(images_batches[validation_batch_idx]).float()
-                labels = torch.nn.functional.one_hot(torch.tensor(labels_batches[validation_batch_idx]).long(), 2).float()
+                avg_validation_loss = total_validation_loss / len(validation_dataloader)
+                validation_losses.append(avg_validation_loss)
+                validation_loss_recorded_at_epoch.append(epoch + percent_through_epoch)
 
-                with torch.no_grad():
-                    validation_batch_loss = trainer.loss_from_batch((images, labels))
-                    cumulative_validation_loss += validation_batch_loss.item()
+                is_model_better = avg_validation_loss < best_validation_loss
+                if is_model_better:
+                    best_validation_loss = avg_validation_loss
+                    best_model = model
+                    torch.save(best_model.state_dict(), os.path.join(results_dir, "best_model.pth"))
+                
+                ### Save an intermediate plot each time a group is finished
+                plt.plot(windowed_training_loss_recorded_at_epoch, windowed_training_losses / np.log(2), label="Training Loss", color='blue')
+                plt.plot(validation_loss_recorded_at_epoch, validation_losses / np.log(2), label="Validation Loss", color='orange')
+                plt.xlabel("Epochs")
+                plt.ylabel("Cross-Entropy Loss (bits)")
+                plt.grid()
+                plt.legend()
+                plt.savefig(os.path.join(results_dir, "losses_after_batch_{}_epoch_{}.png".format(training_batch_idx, epoch+1)))
+                plt.clf()
+            # End of training loop
 
-            average_validation_loss_per_batch = cumulative_validation_loss / len(validation_idxx)
-            validation_losses.append(average_validation_loss_per_batch)
-            validation_loss_recorded_at_epoch.append(epoch -1 + percent_through_epoch)
+        print("Finished Epoch {} of {}.".format(epoch+1, num_epochs))
+        print("\tValidation loss (bits): ", avg_validation_loss / np.log(2))
+        print("\tBest validation loss so far: ", best_validation_loss/np.log(2)) 
 
-            is_model_better = average_validation_loss_per_batch < best_validation_loss
-            if is_model_better:
-                best_validation_loss = average_validation_loss_per_batch    
-                best_model = model
-
-                torch.save(best_model.state_dict(), logs_dir+"best_model.pth")
-
-            print(f"\n\tValidation loss: {average_validation_loss_per_batch / np.log(2)}")
-            print(f"\tBest validation loss: {best_validation_loss / np.log(2)}")
-            print("\tAverage percent of down quarks in training samples: {}".format(round(avg_percent_down_quarks, 3)))
-
-            # Save images of intermediate training and validation losses
-            plt.grid()
-
-            plt.plot(windowed_training_loss_recorded_at_epoch,  windowed_training_losses   / np.log(2), label="Training Loss")
-            plt.plot(validation_loss_recorded_at_epoch, validation_losses / np.log(2), label="Validation Loss")
-            plt.xlabel("Epochs")
-            plt.ylabel("Cross-Entropy Loss (bits)")
-            plt.legend()
-
-            plt.savefig(logs_dir + "intermediate_loss.png".format(epoch+1))
-            plt.clf()
-
-        # Save images of intermediate training and validation losses
-        plt.plot(windowed_training_loss_recorded_at_epoch,   windowed_training_losses   / np.log(2), label="Training Loss")
-        plt.plot(validation_loss_recorded_at_epoch, validation_losses / np.log(2), label="Validation Loss")
-
+        ### Save a plot of the training and validation losses after each epoch
+        plt.plot(windowed_training_loss_recorded_at_epoch, windowed_training_losses / np.log(2), label="Training Loss", color='blue')
+        plt.plot(validation_loss_recorded_at_epoch, validation_losses / np.log(2), label="Validation Loss", color='orange')
         plt.xlabel("Epochs")
         plt.ylabel("Cross-Entropy Loss (bits)")
+        plt.grid()
         plt.legend()
-
-        plt.savefig(logs_dir + "losses_after_epoch_{}.png".format(epoch+1))
+        plt.savefig(os.path.join(results_dir, "losses_after_epoch_{}.png".format(epoch+1)))
         plt.clf()
 
-
     # Save the training and validation losses to files as numpy arrays 
-    np.save(logs_dir+"training_losses.npy",   each_batch_training_losses / np.log(2))
-    np.save(logs_dir+"validation_losses.npy", validation_losses / np.log(2))
-    
-    # Save a plot of the training and validation losses over each epoch, 
-
-    plt.plot(windowed_training_loss_recorded_at_epoch, windowed_training_losses, label="Training Loss")
-    plt.plot(validation_loss_recorded_at_epoch, validation_losses, label="Validation Loss")
-
-    # Subdivide the tick axis into twenty per seed group, and major ticks should be the epochs
-    # plt.xticks(np.linspace(0, num_epochs*num_training_groups, num_seed_groups+1), np.arange(num_seed_groups+1))
-
-    plt.xlabel("Epoch")
-    plt.ylabel("Loss")
-    plt.legend()
-    plt.savefig(logs_dir+"losses_5e-4.png")
+    np.save(os.path.join(results_dir, "windowed_training_loss_recorded_at_these_epochs.npy"), windowed_training_loss_recorded_at_epoch)
+    np.save(os.path.join(results_dir, "windowed_training_losses.npy"), windowed_training_losses / np.log(2))
+    np.save(os.path.join(results_dir, "validation_loss_recorded_at_these_epochs.npy"), validation_loss_recorded_at_epoch)
+    np.save(os.path.join(results_dir, "validation_losses.npy"), validation_losses / np.log(2))
 
     print("Training complete.")
+    return best_model, windowed_training_loss_recorded_at_epoch, windowed_training_losses, validation_loss_recorded_at_epoch, validation_losses
 
         
         

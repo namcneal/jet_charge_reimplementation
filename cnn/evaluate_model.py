@@ -1,74 +1,103 @@
 from matplotlib import pyplot as plt
+from math import floor
 import numpy as np
 import os
+import random
 import torch 
 
 from Model import CNN
-from images_from_seed import output_group_file_name
-
+import mmap_ninja
+from training import DatasetFromMemmap
+from torch.utils.data import DataLoader
 
 def main():
     model_dir = "./"
-    model_filename = "best_model.pth"
-    data_dir = "D:\\image_data"
-    energy_gev = 100
+    model_filename = os.path.join("./training_logs/", "best_model.pth")
+    base_data_dir = os.path.join("d:/", "up_down_2017_data")
+    energy_gev = 1000
     kappa = 0.2
 
-    down_quark_efficiency_roc(model_dir, model_filename, data_dir, energy_gev, kappa)
+    down_quark_efficiency_roc(model_dir, model_filename, base_data_dir, energy_gev, kappa)
 
 
-def down_quark_efficiency_roc(model_dir:str, model_filename:str, data_dir:str, energy_gev:int, kappa:float):
+def down_quark_efficiency_roc(model_dir:str, model_filename:str, base_dir:str, energy_gev:int=1000, kappa:float=0.2):
     num_channels = 2
     model = CNN(num_channels)
 
-    # Remove the "module." prefix from the model's state_dict
+    use_gpu = True
+    if use_gpu:
+        torch.cuda.set_device(0) # Set the GPU to use
+        model = torch.nn.DataParallel(model) # Wrap the model with DataParallel
+        model = model.to('cuda') # Move the model to the GPU
+    print("Model created: ", model)
+
     state_dict = torch.load(os.path.join(model_dir, model_filename))
-    for key in list(state_dict.keys()):
-        if key.startswith("module."):
-            state_dict[key[7:]] = state_dict.pop(key)
 
     model.load_state_dict(state_dict)
     model.eval()
 
-    TOTAL_NUM_DATA_GROUPS = 160
-    NUM_TESTING_GROUPS    = 16
-    testing_data_group_indices = range(TOTAL_NUM_DATA_GROUPS - NUM_TESTING_GROUPS, TOTAL_NUM_DATA_GROUPS)
-
-    num_groups_to_load = 1
-    selected_group_indices = testing_data_group_indices[-num_groups_to_load:]
-
-    testing_images = np.concatenate(
-        [np.load(output_group_file_name(data_dir, energy_gev, kappa, group, "image")) for group in selected_group_indices]
+    testing_images_folder = os.path.join(base_dir, "testing", "images")
+    testing_labels_folder = os.path.join(base_dir, "testing", "labels")
+    testing_dataset = DatasetFromMemmap(
+        mmap_ninja.np_open_existing(testing_images_folder),
+        mmap_ninja.np_open_existing(testing_labels_folder)
     )
 
-    testing_labels = np.concatenate(
-        [np.load(output_group_file_name(data_dir, energy_gev, kappa, group, "label")) for group in selected_group_indices]
-    )    
-
-    outputs = model(testing_images)
+    testing_dataloader = DataLoader(testing_dataset, batch_size=512, shuffle=False)
     
-    down_quark_idx = 1
-    prob_of_down_quark = outputs[:, down_quark_idx].detach().numpy()
-    is_down_quark = testing_labels[:, down_quark_idx]
+    down_quark_probs  = []
+    down_quark_labels = []
+    for (idx, (images, labels)) in enumerate(testing_dataloader):
+        down_quark_labels.append(labels[:,1].detach().numpy())
+        
+        images = images.float()
+        labels = labels.float()
+        if use_gpu:
+            images.to('cuda')
+            labels.to('cuda')
 
-    thresholds  = np.linspace(0, 1, 1000)
+        with torch.no_grad():
+            output = model(images)
+
+        probabilities = torch.nn.functional.softmax(output, dim=1)
+        down_quark_probs.append(probabilities[:,1].cpu().detach().numpy())
+
+    down_quark_probs  = np.concatenate(down_quark_probs) 
+    down_quark_labels = np.concatenate(down_quark_labels)
+    print("Prob of down quark: ", down_quark_probs)
+
+    thresholds  = np.linspace(0, 1, 250)
     down_quark_efficiencies = np.empty(len(thresholds))
     up_quark_efficiencies   = np.empty(len(thresholds))
 
-    for i, threshold in enumerate(thresholds):
-        predictions = prob_of_down_quark > threshold
+    for t_idx, threshold in enumerate(thresholds):
+        up_quark_labels = 1 - down_quark_labels
+        num_down_quarks = np.sum(down_quark_labels)
+        num_up_quarks   = np.sum(up_quark_labels)
+        assert num_down_quarks + num_up_quarks == np.shape(down_quark_labels)[0]
 
-        true_positives  = np.sum(predictions * is_down_quark)
-        false_positives = np.sum(predictions * (1 - is_down_quark))
+        predictions_is_down = down_quark_probs > threshold
+        predictions_is_up   = 1 - predictions_is_down
 
-        down_quark_efficiencies[i] = true_positives  / np.shape(is_down_quark)[0]
-        up_quark_efficiencies[i]   = false_positives / np.shape(is_down_quark)[0]
+        true_positives  = np.dot(predictions_is_down, down_quark_labels)
+        true_negatives  = np.dot(predictions_is_up, up_quark_labels)
 
-    plot = plt.figure()
-    plt.plot(up_quark_efficiencies, down_quark_efficiencies)
-    plt.xlabel("False positive rate / Up quark efficiency")
-    plt.ylabel("True positive rate")
-    plt.title("ROC curve")
+        down_quark_efficiencies[t_idx] = true_positives  / num_down_quarks
+        up_quark_efficiencies[t_idx]   = true_negatives / num_up_quarks
+
+    plt.plot(down_quark_efficiencies, up_quark_efficiencies, color='navy', lw=2)    
+
+    plt.fill_between(down_quark_efficiencies, up_quark_efficiencies, color='navy', alpha=0.2)
+    auc = np.trapz(down_quark_efficiencies, up_quark_efficiencies)
+    plt.text(0.6, 0.1, "AUC: {:.3f}".format(auc), fontsize=12)
+
+    plt.grid()
+    plt.xticks(np.linspace(0,1,11))
+    plt.yticks(np.linspace(0,1,11))
+    plt.ylabel("Up Quark (Background) Rejection")
+    plt.xlabel("Down Quark (Signal) Acceptance")
+    plt.title(r"ROC curve for 1000 GeV Jets (2017 Data) at $\kappa$=0.2")
+    plt.savefig("roc_curve_for_{}_GeV_jets_at_kappa_{}_2017_data.png".format(energy_gev, kappa))
     plt.show()
 
 

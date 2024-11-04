@@ -26,7 +26,7 @@ class JetImage(object):
     variable_range = np.linspace(-2*jet_radius, 2*jet_radius, pixels_per_dim)
 
     @classmethod 
-    def augment_many_images(cls, image_set:np.array):
+    def augment_many_images(cls, image_set:np.array, label_set:np.array):
         assert len(image_set.shape) == 4, "The input has shape: {}. It must be a 4D array".format(image_set.shape)
 
         all_augments = [np.zeros_like(image_set) for _ in range(7)] 
@@ -42,7 +42,8 @@ class JetImage(object):
         all_augments[5][:, :, :,  1:] = image_set[:,:, :, :-1]
         all_augments[6][:, :, :, :-1] = image_set[:,:, :, 1:]
 
-        return np.concatenate([image_set] + all_augments, axis=0)
+        return (np.concatenate([image_set] + all_augments, axis=0),
+                np.concatenate([label_set for _ in range(8)], axis=0))
     
     @classmethod
     def preprocess_a_channel(cls, many_images:np.array, channel_idx:int):
