@@ -20,7 +20,9 @@ def main():
     down_quark_efficiency_roc(model_dir, model_filename, base_data_dir, energy_gev, kappa)
 
 
-def down_quark_efficiency_roc(model_dir:str, model_filename:str, base_dir:str, energy_gev:int=1000, kappa:float=0.2):
+def down_quark_efficiency_roc(model_dir:str, model_filename:str, 
+                              output_data_root_dir:str, energy_gev:int=1000, 
+                              kappa:float=0.2):
     num_channels = 2
     model = CNN(num_channels)
 
@@ -29,15 +31,14 @@ def down_quark_efficiency_roc(model_dir:str, model_filename:str, base_dir:str, e
         torch.cuda.set_device(0) # Set the GPU to use
         model = torch.nn.DataParallel(model) # Wrap the model with DataParallel
         model = model.to('cuda') # Move the model to the GPU
-    print("Model created: ", model)
 
     state_dict = torch.load(os.path.join(model_dir, model_filename))
 
     model.load_state_dict(state_dict)
     model.eval()
 
-    testing_images_folder = os.path.join(base_dir, "testing", "images")
-    testing_labels_folder = os.path.join(base_dir, "testing", "labels")
+    testing_images_folder = os.path.join(output_data_root_dir, "testing", "images")
+    testing_labels_folder = os.path.join(output_data_root_dir, "testing", "labels")
     testing_dataset = DatasetFromMemmap(
         mmap_ninja.np_open_existing(testing_images_folder),
         mmap_ninja.np_open_existing(testing_labels_folder)
@@ -66,7 +67,7 @@ def down_quark_efficiency_roc(model_dir:str, model_filename:str, base_dir:str, e
     down_quark_labels = np.concatenate(down_quark_labels)
     print("Prob of down quark: ", down_quark_probs)
 
-    thresholds  = np.linspace(0, 1, 250)
+    thresholds  = np.linspace(0, 1, 500)
     down_quark_efficiencies = np.empty(len(thresholds))
     up_quark_efficiencies   = np.empty(len(thresholds))
 
@@ -96,8 +97,10 @@ def down_quark_efficiency_roc(model_dir:str, model_filename:str, base_dir:str, e
     plt.yticks(np.linspace(0,1,11))
     plt.ylabel("Up Quark (Background) Rejection")
     plt.xlabel("Down Quark (Signal) Acceptance")
-    plt.title(r"ROC curve for 1000 GeV Jets (2017 Data) at $\kappa$=0.2")
-    plt.savefig("roc_curve_for_{}_GeV_jets_at_kappa_{}_2017_data.png".format(energy_gev, kappa))
+    plt.title(r"ROC curve for {} GeV Jets (2017 Data) at $\kappa$={}".format(energy_gev, kappa))
+
+    fig_filepath = os.path.join(output_data_root_dir, "roc_curve_for_{}_GeV_jets_at_kappa_{}_2017_data.png".format(energy_gev, kappa))
+    plt.savefig(fig_filepath)
     plt.show()
 
 

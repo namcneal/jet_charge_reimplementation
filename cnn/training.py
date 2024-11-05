@@ -48,7 +48,7 @@ import random
 import mmap_ninja
 from torch.utils.data import DataLoader, TensorDataset
 
-def train_model(model:CNN, 
+def train_model(model:CNN, kappa:float,
                 base_training_dir:str, augmented_training_dir:str, validation_dir:str,
                 results_dir:str,
                 num_epochs:int=35, batch_size:int=512, use_gpu:bool=True):
@@ -148,7 +148,7 @@ def train_model(model:CNN,
                 if is_model_better:
                     best_validation_loss = avg_validation_loss
                     best_model = model
-                    torch.save(best_model.state_dict(), os.path.join(results_dir, "best_model.pth"))
+                    torch.save(best_model.state_dict(), os.path.join(results_dir, "best_model.pth".format(kappa)))
                 
                 ### Save an intermediate plot each time a group is finished
                 plt.plot(windowed_training_loss_recorded_at_epoch, windowed_training_losses / np.log(2), label="Training Loss", color='blue')
@@ -157,7 +157,7 @@ def train_model(model:CNN,
                 plt.ylabel("Cross-Entropy Loss (bits)")
                 plt.grid()
                 plt.legend()
-                plt.savefig(os.path.join(results_dir, "losses_after_batch_{}_epoch_{}.png".format(training_batch_idx, epoch+1)))
+                plt.savefig(os.path.join(results_dir, "intermediate_losses.png".format(training_batch_idx, epoch+1)))
                 plt.clf()
             # End of training loop
 
