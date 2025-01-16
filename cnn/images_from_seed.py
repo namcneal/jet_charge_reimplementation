@@ -32,9 +32,6 @@ class DatasetFromGroups(Dataset):
         self.image_memmaps = [RaggedMmap(os.path.join(base_dir, folder_name)) for folder_name in group_folder_names]
         self.label_memmaps = [RaggedMmap(os.path.join(base_dir, folder_name)) for folder_name in group_folder_names]
 
-        if augment:
-            NUM_AUGMENTATIONS = 7
-            self.
         self.num_groups = len(group_folder_names)
     
 
@@ -45,7 +42,7 @@ def main():
     seed value, energy in GeV, and kappa value. It generates images using these parameters,
     concatenates the images, and saves them to a file.
     Command Line Arguments:
-    - data_dir (str): Path to the data directory.
+    - raw_data_dir (str): Path to the data directory.
     - image_dir (str): Path to the image directory.
     - seed (int): Seed value for random number generation.
     - energy_gev (int): Energy in GeV.
@@ -148,11 +145,11 @@ def combine_up_down_images_create_labels(up_images:np.array, down_images:np.arra
 
     return all_images, is_down
 
-def generate_images_from_seed(kappa:float, energy_gev:int, seed:int, data_dir:str, num_channels:int=2):
+def generate_images_from_seed(kappa:float, energy_gev:int, seed:int, raw_data_dir:str, num_channels:int=2):
     
     year = 2017
-    up_jet_datafile   = JetsFromFile(energy_gev,   "up", seed, data_dir, year)
-    down_jet_datafile = JetsFromFile(energy_gev, "down", seed, data_dir, year)
+    up_jet_datafile   = JetsFromFile(energy_gev,   "up", seed, raw_data_dir, year)
+    down_jet_datafile = JetsFromFile(energy_gev, "down", seed, raw_data_dir, year)
 
     up_jets   = up_jet_datafile.from_txt()
     down_jets = down_jet_datafile.from_txt()

@@ -50,7 +50,7 @@ class CNN(torch.nn.Module):
         num_filters  = 64
         in_channels  = [num_input_channels, num_filters, num_filters]
         out_channels = [num_filters,        num_filters, num_filters]
-=
+        
         """
         Each convolutional layer is followed by a maxpooling layer and
         a dropout layer...The dropout was 0.18 for the first layer and 0.35 for the other layers

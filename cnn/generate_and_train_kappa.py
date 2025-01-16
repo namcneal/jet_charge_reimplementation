@@ -11,7 +11,7 @@ def run_all_kappa(raw_data_dir:str, num_seeds:int,
                     energy_gev:int,  
                     output_data_root_dir:str):
     
-    KAPPAS = np.arange(0, 7)
+    KAPPAS = np.arange(0,1)
     for k in KAPPAS:
         modified_out_dir = os.path.join(output_data_root_dir, "saved-data-for-{}GeV-{}-tenth-kappa".format(energy_gev, k))
 

@@ -167,26 +167,24 @@ def generate_images_from_all_seeds(in_data_dir:str, energy_gev:int, kappa:float,
         validation_indices = all_indices[num_training:num_training+num_validation]
         testing_indices    = all_indices[-num_testing:] 
         
-        assigned_indices = [training_indices, validation_indices, testing_indices]
+        assigned_test_train_val_indices = [training_indices, validation_indices, testing_indices]
 
         # Iterate through image-label directory pairs for each of the training, validation, and testing sets
-        for (image_dir, image_memmap, label_dir, label_memmap, assigned_indices) in enumerate(zip(train_val_test_image_dirs, 
-                                                                                                    train_val_test_image_memmaps,
-                                                                                                    train_val_test_label_dirs,
-                                                                                                    train_val_test_label_memmaps,
-                                                                                                    train_val_test_indices)):
+        for loop_idx, (image_dir, label_dir, assigned_indices) in enumerate(zip(train_val_test_image_dirs, 
+                                                                                train_val_test_label_dirs,
+                                                                                assigned_test_train_val_indices)):
 
             images_from_assigned_indices = all_images[assigned_indices,:,:,:]
 
             # Given the first seed, create the memmap files for each of the training, validation, and testing sets
-            if seed_no == first_seed:
-                image_memmap = mmap_ninja.np_from_ndarray(image_dir, images_from_assigned_indices)
-                label_memmap = mmap_ninja.np_from_ndarray(label_dir, images_from_assigned_indices) 
+            if train_val_test_image_memmaps[loop_idx] is None:
+                train_val_test_image_memmaps[loop_idx] = mmap_ninja.np_from_ndarray(image_dir, images_from_assigned_indices)
+                train_val_test_label_memmaps[loop_idx] = mmap_ninja.np_from_ndarray(label_dir, all_labels[assigned_indices,:])
             
             # Otherwise we append the new images and labels to the existing memmap files
             else:
-                mmap_ninja.np_extend(image_memmap, images_from_assigned_indices)
-                mmap_ninja.np_extend(label_memmap, images_from_assigned_indices)
+                mmap_ninja.np_extend(train_val_test_image_memmaps[loop_idx], images_from_assigned_indices)
+                mmap_ninja.np_extend(train_val_test_label_memmaps[loop_idx], all_labels[assigned_indices,:])
 
         print("\tImages and labels saved to memmap files for seed {}.".format(seed_no))
         print("\tSaved in total: {} training, {} validation, {} testing images.".format(num_training, num_validation, num_testing))
