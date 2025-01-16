@@ -1,4 +1,5 @@
 *.json
+*.ninja
 *.npy
 *.png
 *.pyc

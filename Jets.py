@@ -2,14 +2,12 @@ import energyflow
 
 
 class Particle(object):
-    def __init__(self, eta, phi, pt, E, id):
+    def __init__(self, eta, phi, pt, id):
         self.id  = id
         
         self.eta = eta
         self.phi = phi
         self.pt  = pt
-        # self.E   = E
-
         # self.p   =  energyflow.p4s_from_ptyphipids([pt, eta, phi, id])
 
     def charge(self):
@@ -27,12 +25,15 @@ class Jet(object):
     def __init__(self, origin:str):
         self.origin    = origin
 
-        # self.particles     : list[Particle] = None
         self.num_particles = None
-        self.particle_data : np.array       = None
 
-        self.centroid_eta = None
-        self.centroid_phi = None
+        # The particle data is stored as a 4xN array, where N is the number of particles
+        # The rows correspond to:
+        #      0: eta
+        #      1: phi
+        #      2: pt
+        #      3: charge
+        self.particle_data : np.array = None
         self.total_pt     = None
 
     def get_num_particles(self):
@@ -44,20 +45,20 @@ class Jet(object):
     def get_phi(self):
         return self.centroid_phi
     
-    def get_pt(self):
+    def get_total_pt(self):
         return self.total_pt
     
     def get_particle_etas(self):
-        return self.particle_data[0,:].view()
+        return self.particle_data[:,0].view()
     
     def get_particle_phis(self):
-        return self.particle_data[1,:].view()
+        return self.particle_data[:,1].view()
     
     def get_particle_pts(self):
-        return self.particle_data[2,:].view()
+        return self.particle_data[:,2].view()
     
     def get_particle_charges(self):
-        return self.particle_data[3,:].view()
+        return self.particle_data[:,3].view()
 
     @classmethod
     def from_particles(cls, particles:list[Particle], origin:str):
@@ -69,10 +70,7 @@ class Jet(object):
         particle_pts  = [p.pt  for p in particles]
         particle_charges = [p.charge() for p in particles]
 
-        jet.particle_data = np.stack([particle_etas, particle_phis, particle_pts, particle_charges])
-
-        jet.centroid_eta = np.average(particle_etas, weights=particle_pts)
-        jet.centroid_phi = np.average(particle_phis, weights=particle_pts)
+        jet.particle_data = np.stack([particle_etas, particle_phis, particle_pts, particle_charges], axis=1)
         jet.total_pt     = sum(particle_pts)
 
         return jet

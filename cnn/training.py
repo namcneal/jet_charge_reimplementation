@@ -54,7 +54,7 @@ def train_model(model:CNN, kappa:float,
                 num_epochs:int=35, batch_size:int=512, use_gpu:bool=True):
     
     trainer   = CNNTrainer(model)
-    optimizer = torch.optim.Adam(model.parameters(), lr=5e-3)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
     use_gpu = True
     if use_gpu:
@@ -62,6 +62,7 @@ def train_model(model:CNN, kappa:float,
         model = torch.nn.DataParallel(model) # Wrap the model with DataParallel
         model = model.to('cuda') # Move the model to the GPU
 
+    # Load the base training images and their augmented counterparts
     base_training_dataset = DatasetFromMemmap(
         mmap_ninja.np_open_existing(os.path.join(base_training_dir, "images")),
         mmap_ninja.np_open_existing(os.path.join(base_training_dir, "labels"))
@@ -72,6 +73,7 @@ def train_model(model:CNN, kappa:float,
         mmap_ninja.np_open_existing(os.path.join(augmented_training_dir, "labels"))
     )
 
+    # Combine the two datasets to create the full dataset used for training
     full_training_dataset = torch.utils.data.ConcatDataset([base_training_dataset, augmented_dataset])
 
     validation_dataset = DatasetFromMemmap(

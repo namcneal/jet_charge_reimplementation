@@ -5,7 +5,7 @@ from Jets import Particle, Jet
 class JetsFromFile(object):
     JET_EVENTS_PER_FILE = 10_000
 
-    def __init__(self, energy_gev, origin_particle, seed_no, dir):
+    def __init__(self, energy_gev, origin_particle, seed_no, dir, year=2024):
         if dir[-1] != '/':
             dir += '/'
 
@@ -17,7 +17,10 @@ class JetsFromFile(object):
             raise ValueError("seed_no must be an integer")
         
         self.origin_particle = origin_particle
-        self.filename = "{}{}GEV-{}quark-seed{}.txt".format(dir, energy_gev, origin_particle, seed_no)
+        if year == 2024:
+            self.filename = "{}{}GeV-{}quark-seed{}.txt".format(dir, energy_gev, origin_particle, seed_no)
+        else:
+            self.filename = "{}{}GEV-{}quark-event-seed{}.txt".format(dir, energy_gev, origin_particle, seed_no)
     
     def from_txt(self):
         return self.jets_from_fastjet_txt()
@@ -52,10 +55,15 @@ class JetsFromFile(object):
     def particle_from_line(cls, line):
         line = line.split(',')
 
-        data = np.array([float(x) for x in line[0:-1]])
         pid  = int(line[-1])
+        data = np.array([float(x) for x in line[0:-1]])
 
-        return Particle(*data, pid)
+        # Check for the old vs new data format
+        rapidity = data[0]
+        phi      = data[1]
+        pt       = data[2]
+
+        return Particle(rapidity, phi, pt, pid)
 
         
             
