@@ -5,9 +5,13 @@ from Jets import Particle, Jet
 class JetsFromFile(object):
     JET_EVENTS_PER_FILE = 10_000
 
-    def __init__(self, energy_gev, origin_particle, seed_no, dir, year=2024):
-        if dir[-1] != '/':
-            dir += '/'
+    def __init__(self, energy_gev, origin_particle, seed_no, raw_data_dir, year=2024):
+        raw_data_dir += "up_down"
+        if year == 2017:
+            raw_data_dir += "_2017"
+
+        if raw_data_dir[-1] != '/':
+            raw_data_dir += '/'
 
         if energy_gev not in (100,1000):
             raise ValueError("Energy in GeV must be either 100 or 1000")
@@ -18,10 +22,12 @@ class JetsFromFile(object):
         
         self.origin_particle = origin_particle
         if year == 2024:
-            self.filename = "{}{}GeV-{}quark-seed{}.txt".format(dir, energy_gev, origin_particle, seed_no)
+            self.filename = "{}{}GeV-{}quark-seed{}.txt".format(raw_data_dir, energy_gev, origin_particle, seed_no)
+        elif year == 2017:
+            self.filename = "{}{}GEV-{}quark-event-seed{}.txt".format(raw_data_dir, energy_gev, origin_particle, seed_no)
         else:
-            self.filename = "{}{}GEV-{}quark-event-seed{}.txt".format(dir, energy_gev, origin_particle, seed_no)
-    
+            raise ValueError("year must be either 2024 or 2017")
+            
     def from_txt(self):
         return self.jets_from_fastjet_txt()
 
