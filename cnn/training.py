@@ -54,7 +54,7 @@ def train_model(model:CNN, kappa:float,
                 num_epochs:int=35, batch_size:int=512, use_gpu:bool=True):
     
     trainer   = CNNTrainer(model)
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+    optimizer = torch.optim.Adam(model.parameters(), lr=1/1000)
 
     use_gpu = True
     if use_gpu:
@@ -87,7 +87,7 @@ def train_model(model:CNN, kappa:float,
 
     BATCH_SIZE = 512 
     training_dataloader   = DataLoader(full_training_dataset, batch_size=BATCH_SIZE, shuffle=True)
-    validation_dataloader = DataLoader(validation_dataset,    batch_size=BATCH_SIZE, shuffle=False)
+    validation_dataloader = DataLoader(validation_dataset,    batch_size=BATCH_SIZE, shuffle=True)
 
     each_batch_training_losses = []
 
@@ -174,7 +174,7 @@ def train_model(model:CNN, kappa:float,
         plt.ylabel("Cross-Entropy Loss (bits)")
         plt.grid()
         plt.legend()
-        plt.savefig(os.path.join(results_dir, "losses_after_epoch_{}.png".format(epoch+1)))
+        plt.savefig(os.path.join(results_dir, "losses_after_epoch_{}_kappa_{}.png".format(epoch+1, kappa)))
         plt.clf()
 
     # Save the training and validation losses to files as numpy arrays 
