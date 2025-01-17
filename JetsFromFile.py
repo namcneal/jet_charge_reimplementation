@@ -4,20 +4,16 @@ from Jets import Particle, Jet
 
 class JetsFromFile(object):
     JET_EVENTS_PER_FILE = 10_000
-
-    def add_backslash_to_dir(self, dir:str):
-        if dir[-1] != '/':
-            dir += '/'
-        return dir
-
     def __init__(self, energy_gev, origin_particle, seed_no, raw_data_dir, year=2024):
-        raw_data_dir = self.add_backslash_to_dir(raw_data_dir)
+        if raw_data_dir[-1] != '/':
+            raw_data_dir += '/'
 
         raw_data_dir += "up_down"
         if year == 2017:
             raw_data_dir += "_2017"
 
-        raw_data_dir = self.add_backslash_to_dir(raw_data_dir)
+        if raw_data_dir[-1] != '/':
+            raw_data_dir += '/'
 
         if energy_gev not in (100,1000):
             raise ValueError("Energy in GeV must be either 100 or 1000")
