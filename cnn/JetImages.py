@@ -145,10 +145,17 @@ class JetImage(object):
         all_augments[2] = image_set[:,:, ::-1, ::-1]
 
         # The four translations of the image
-        all_augments[3][:, :, 1:,  :] = image_set[:, :, 1:, :] 
-        all_augments[4][:, :, :-1, :] = image_set[:,:, :-1, :]
-        all_augments[5][:, :, :,  1:] = image_set[:,:, :, :-1]
-        all_augments[6][:, :, :, :-1] = image_set[:,:, :, 1:]
+        all_augments[3] = np.roll(image_set, -1, axis=2) # Shift the whole array one space to the left
+        all_augments[3][:,:,-1,:] = 0 # black out the rightmost column
+
+        all_augments[4] = np.roll(image_set, 1, axis=2) # Shift the whole array one space to the right
+        all_augments[4][:,:,0,:] = 0  # black out the leftmost column
+
+        all_augments[5] = np.roll(image_set, -1, axis=3) # Shift the whole array one space down
+        all_augments[5][:,:,:,-1] = 0 # black out the bottom row
+
+        all_augments[6] = np.roll(image_set, 1, axis=3) # Shift the whole array one space up
+        all_augments[6][:,:,:, 0] = 0 # black out the top row
 
         return (np.concatenate([image_set] + all_augments, axis=0),
                 np.concatenate([label_set for _ in range(8)], axis=0))
