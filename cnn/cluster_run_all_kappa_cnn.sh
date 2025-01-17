@@ -10,10 +10,10 @@
 #SBATCH --mail-type=BEGIN
 #SBATCH --mail-type=END
 
-RAW_DATA_DIR="/n/home02/nmcneal/jet_tagging/.data"
+RAW_DATA_DIR="/n/home02/nmcneal/jet_tagging/data"
 OUT_DATA_ROOT="/n/netscratch/reece_lab/Lab/noah/data_from_training_cnn"
 
 module load python/3.10.13-fasrc01
 source activate pt2.3.0_cuda12.1
 
-python -c 'from generate_and_train_kappa import run_all_kappa as func; func("/n/home02/nmcneal/jet_tagging/.data", 10, 1000, "/n/netscratch/reece_lab/Lab/noah/data_from_training_cnn")'
+python -c 'from generate_and_train_kappa import run_all_kappa as func; func("/n/home02/nmcneal/jet_tagging/data/", 10, 1000, "/n/netscratch/reece_lab/Lab/noah/data_from_training_cnn")'
