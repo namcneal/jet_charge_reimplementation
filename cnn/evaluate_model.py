@@ -1,6 +1,7 @@
 from matplotlib import pyplot as plt
 from math import floor
 import numpy as np
+import scipy as sci
 import os
 import random
 import torch 
@@ -78,18 +79,23 @@ def down_quark_efficiency_roc(model_dir:str, model_filename:str,
         assert num_down_quarks + num_up_quarks == np.shape(down_quark_labels)[0]
 
         predictions_is_down = down_quark_probs > threshold
-        predictions_is_up   = 1 - predictions_is_down
+        predictions_is_up   = down_quark_probs <= threshold
 
         true_positives  = np.dot(predictions_is_down, down_quark_labels)
         true_negatives  = np.dot(predictions_is_up, up_quark_labels)
 
-        down_quark_efficiencies[t_idx] = true_positives  / num_down_quarks
+        down_quark_efficiencies[t_idx] = true_positives / num_down_quarks
         up_quark_efficiencies[t_idx]   = true_negatives / num_up_quarks
 
-    plt.plot(down_quark_efficiencies, up_quark_efficiencies, color='navy', lw=2)    
+    # Sort the efficiencies along increasing horizontal axis, i.e. the down quark true positive rate
+    increasing_down_quark_efficiencies = np.argsort(down_quark_efficiencies)
+    down_quark_efficiencies = down_quark_efficiencies[increasing_down_quark_efficiencies]
+    up_quark_efficiencies   = up_quark_efficiencies[increasing_down_quark_efficiencies]
+    
+    auc = sci.integrate.simpson(down_quark_efficiencies, up_quark_efficiencies)
 
+    plt.plot(down_quark_efficiencies, up_quark_efficiencies, color='navy', lw=2)    
     plt.fill_between(down_quark_efficiencies, up_quark_efficiencies, color='navy', alpha=0.2)
-    auc = np.trapz(down_quark_efficiencies, up_quark_efficiencies)
     plt.text(0.6, 0.1, "AUC: {:.3f}".format(auc), fontsize=12)
 
     plt.grid()
