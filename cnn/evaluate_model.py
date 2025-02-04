@@ -92,7 +92,7 @@ def down_quark_efficiency_roc(model_dir:str, model_filename:str,
     down_quark_efficiencies = down_quark_efficiencies[increasing_down_quark_efficiencies]
     up_quark_efficiencies   = up_quark_efficiencies[increasing_down_quark_efficiencies]
     
-    auc = sci.integrate.simpson(down_quark_efficiencies, up_quark_efficiencies)
+    auc = sci.integrate.simpson(up_quark_efficiencies, x=down_quark_efficiencies)
 
     plt.plot(down_quark_efficiencies, up_quark_efficiencies, color='navy', lw=2)    
     plt.fill_between(down_quark_efficiencies, up_quark_efficiencies, color='navy', alpha=0.2)
