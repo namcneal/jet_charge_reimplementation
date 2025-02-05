@@ -4,7 +4,7 @@ import torch
 
 from Model import CNN
 from generate_images import generate_jet_image_memmaps
-from training import CNNTrainer, train_model
+from train_model import CNNTrainer, train_model
 from evaluate_model import down_quark_efficiency_roc
 
 def run_all_kappa(raw_data_dir:str, num_seeds:int, 

@@ -85,7 +85,7 @@ def train_model(model:CNN, kappa:float,
     print("Of these, {} are in the base training set and {} are in the augmented set.".format(len(base_training_dataset), len(augmented_dataset)))
     print("Validating with {} images.".format(len(validation_dataset)))
 
-    BATCH_SIZE = 512 
+    BATCH_SIZE = 1024
     training_dataloader   = DataLoader(full_training_dataset, batch_size=BATCH_SIZE, shuffle=True)
     validation_dataloader = DataLoader(validation_dataset,    batch_size=BATCH_SIZE, shuffle=True)
 
