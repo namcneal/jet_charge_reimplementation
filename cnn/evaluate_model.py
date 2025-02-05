@@ -8,7 +8,7 @@ import torch
 
 from Model import CNN
 import mmap_ninja
-from training import DatasetFromMemmap
+from train_model import DatasetFromMemmap
 from torch.utils.data import DataLoader
 
 def main():
