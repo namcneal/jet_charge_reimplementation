@@ -16,4 +16,4 @@ OUT_DATA_ROOT="/n/netscratch/reece_lab/Lab/noah/data_from_training_cnn"
 module load python/3.10.13-fasrc01
 source activate pt2.3.0_cuda12.1
 
-python -c 'from generate_and_train_kappa import run_all_kappa as func; func(${RAW_DATA_DIR}, 10, 1000, ${OUT_DATA_DIR})'
+python -c 'from generate_and_train_kappa import run_all_kappa as func; func($RAW_DATA_DIR, 10, 1000, $OUT_DATA_DIR)'
