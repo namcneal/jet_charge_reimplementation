@@ -135,30 +135,40 @@ class JetImage(object):
 
     @classmethod 
     def augment_many_images(cls, image_set:np.array, label_set:np.array):
+        # Four axes are:
+        #   0. Indexing different images
+        #   1. Index over the channels
+        # 2,3. Indices over the pixels
         assert len(image_set.shape) == 4, "The input has shape: {}. It must be a 4D array".format(image_set.shape)
 
-        all_augments = [np.zeros_like(image_set) for _ in range(7)] 
+        assert label_set.shape[0] == image_set.shape[0], "The number of images and labels must be the same."
+
+        NUM_TRANSFORMATIONS = 7
+        all_versions = [np.zeros_like(image_set) for _ in range(NUM_TRANSFORMATIONS)] 
+        all_labels   = [label_set.copy()         for _ in range(NUM_TRANSFORMATIONS)]
 
         # The three reflections of the image: horizontal, vertical, and both
-        all_augments[0] = image_set[:,:, :, ::-1]
-        all_augments[1] = image_set[:,:, ::-1, :]
-        all_augments[2] = image_set[:,:, ::-1, ::-1]
+        all_versions[0] = image_set[:,:, :, ::-1]
+        all_versions[1] = image_set[:,:, ::-1, :]
+        all_versions[2] = image_set[:,:, ::-1, ::-1]
 
         # The four translations of the image
-        all_augments[3] = np.roll(image_set, -1, axis=2) # Shift the whole array one space to the left
-        all_augments[3][:,:,-1,:] = 0 # black out the rightmost column
+        all_versions[3] = np.roll(image_set, -1, axis=2) # Shift the whole array one space to the left
+        all_versions[3][:,:,-1,:] = 0 # black out the rightmost column
 
-        all_augments[4] = np.roll(image_set, 1, axis=2) # Shift the whole array one space to the right
-        all_augments[4][:,:,0,:] = 0  # black out the leftmost column
+        all_versions[4] = np.roll(image_set, 1, axis=2) # Shift the whole array one space to the right
+        all_versions[4][:,:,0,:] = 0  # black out the leftmost column
 
-        all_augments[5] = np.roll(image_set, -1, axis=3) # Shift the whole array one space down
-        all_augments[5][:,:,:,-1] = 0 # black out the bottom row
+        all_versions[5] = np.roll(image_set, -1, axis=3) # Shift the whole array one space down
+        all_versions[5][:,:,:,-1] = 0 # black out the bottom row
 
-        all_augments[6] = np.roll(image_set, 1, axis=3) # Shift the whole array one space up
-        all_augments[6][:,:,:, 0] = 0 # black out the top row
+        all_versions[6] = np.roll(image_set, 1, axis=3) # Shift the whole array one space up
+        all_versions[6][:,:,:, 0] = 0 # black out the top row
 
-        return (np.concatenate([image_set] + all_augments, axis=0),
-                np.concatenate([label_set for _ in range(8)], axis=0))
+        all_versions = np.concatenate(all_versions, axis=0)
+        all_labels   = np.concatenate(all_labels, axis=0)
+
+        return (all_versions, all_labels)
     
 
 
