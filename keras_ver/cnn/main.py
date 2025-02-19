@@ -6,6 +6,14 @@ import sys
 project_root_directory = os.path.abspath(os.path.join("..", ".."))
 sys.path.append(project_root_directory)
 
+higher_directories = [os.path.abspath(os.path.join(os.path.dirname(__file__), '..')), 
+                      os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
+                    ]
+# Append the higher directory to sys.path
+for directory in higher_directories:
+    if directory not in sys.path: sys.path.append(directory)
+
+
 from FilesystemNavigation import Directories, Filenames
 
 if __name__ == '__main__':
