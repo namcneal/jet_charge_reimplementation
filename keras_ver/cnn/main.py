@@ -24,7 +24,7 @@ def configure_system(args:argparse.Namespace):
                     data_details = data_details
     )
 
-    for sub_dir in directories_navigation.subdirectories_with_imports:
+    for sub_dir in directories.subdirectories_with_imports:
         sys.path.append(sub_dir)
 
 
