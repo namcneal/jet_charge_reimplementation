@@ -179,7 +179,7 @@ def generate_images_from_all_seeds(directories:Directories, filenames:Filenames,
                 mmap_ninja.np_extend(train_test_label_memmaps[loop_idx], all_labels[assigned_indices,:])
 
         print("\tImages and labels saved to memmap files for seed {}.".format(seed_no))
-        print("\tSaved in total: {} training, {} validation, {} testing images.".format(num_training, num_validation, num_testing))
+        print("\tSaved in total: {} training, {} testing images.".format(num_training, num_testing))
 
 def generate_jet_image_memmaps(directories:Directories, filenames:Filenames, seeds:range, kappa:float): 
     # Generate the training, validation, and testing images and labels for all seeds
