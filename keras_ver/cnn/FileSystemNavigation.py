@@ -6,7 +6,7 @@ def dataset_details_str(data_year:int, energy_gev:int, kappa:float):
     return "(data_year_{})_(energy_{}_GeV)_(jet_charge_kappa_{})".format(data_year, energy_gev, kappa)
 
 class Directories(object):
-    def __init__(self, root_dir:str, raw_data_dir:str, image_dir:str, save_dir:str,
+    def __init__(self, repo_root_dir:str, raw_data_dir:str, image_dir:str, save_dir:str,
                  data_year:int, energy_gev:int, kappa:float):
         self.data_year  = data_year
         self.energy_gev = energy_gev
@@ -14,15 +14,15 @@ class Directories(object):
         self.dataset_details = dataset_details_str(data_year, energy_gev, kappa)
 
         # References the repository root directory
-        self.cnn_project_root_directory = root_dir
+        self.repository_root_directory = repo_root_dir
 
         self.subdirectories_with_imports : list[str] = []
 
-        self.subdirectories_with_imports.append(self.cnn_project_root_directory)
+        self.subdirectories_with_imports.append(self.repository_root_directory)
         for subdir_name in ["jet_data_tools", 
                             "jet_data_tools/jet_images", 
                             "keras_ver/cnn",]:
-            self.subdirectories_with_imports.append(os.path.join(self.cnn_project_root_directory, subdir_name))
+            self.subdirectories_with_imports.append(os.path.join(self.repository_root_directory, subdir_name))
 
         self.raw_data_directory  = data_dir
         self.image_directory     = image_dir

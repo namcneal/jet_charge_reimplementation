@@ -2,13 +2,14 @@ import argparse
 import os 
 import sys 
 
+repository_root_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../'))
 higher_directories = [os.path.abspath(os.path.join(os.path.dirname(__file__), '..')), 
-                      os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
+                      repository_root_directory
                     ]
 # Append the higher directory to sys.path
 for directory in higher_directories:
-    print(directory)
     if directory not in sys.path: sys.path.append(directory)
+\
 
 # at keras_ver/cnn/FilesystemNavigation.py
 from FilesystemNavigation import Directories, Filenames
@@ -33,7 +34,7 @@ if __name__ == '__main__':
 
 def configure_system(args:argparse.Namespace):
     directories = Directories(
-                    root_dir     = project_root_directory,
+                    root_dir     = repository_root_directory,
                     raw_data_dir = args.raw_jet_data_dir,
                     image_dir    = args.image_dir,
                     save_dir     = args.save_dir
