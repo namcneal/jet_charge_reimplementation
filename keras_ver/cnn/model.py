@@ -122,8 +122,8 @@ class CNN(object):
             if summary:
                 model.summary()
 
-        self.model = model
-
+        return model
+        
     def train_model(self, image_label_data:DataLoader, validation_pct, batch_size, epochs):
         history = self.model.fit(
             x                 = image_label_data,
