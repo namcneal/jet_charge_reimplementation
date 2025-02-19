@@ -42,16 +42,17 @@ class CNNSpecification(object):
         self.num_image_channels = num_image_channels
 
         self.num_conv_layers = num_conv_layers
-        self.conv_layer_num_filters = conv_layer_num_filters
-        self.conv_layer_filter_sizes = conv_layer_filter_sizes
+        self.conv_layer_num_filters    = conv_layer_num_filters
+        self.conv_layer_filter_sizes   = conv_layer_filter_sizes
         self.conv_pooling_kernel_sizes = conv_pooling_kernel_sizes
-        self.conv_dropout_percents = conv_dropout_percents
+        self.conv_dropout_percents     = conv_dropout_percents
+        self.conv_activation           = intermediate_dense_activation
 
-        self.intermediate_dense_size = intermediate_dense_size
-        self.intermediate_dense_dropout = intermediate_dense_dropout
-        self.num_intermediate_dense_activation = num_intermediate_dense_activation
+        self.intermediate_dense_size       = intermediate_dense_size
+        self.intermediate_dense_dropout    = intermediate_dense_dropout
+        self.intermediate_dense_activation = intermediate_dense_activation
 
-        self.num_final_dense_logits = num_final_dense_logits
+        self.num_final_dense_logits        = num_final_dense_logits
         self.final_dense_logits_activation = final_dense_logits_activation
 
         self.loss = loss
@@ -74,7 +75,7 @@ class CNNSpecification(object):
 
             intermediate_dense_size=64,
             intermediate_dense_dropout=0.35,
-            num_intermediate_dense_activation='silu',
+            intermediate_dense_activation='silu',
 
             num_final_dense_logits=2,
             final_dense_logits_activation='softmax',
