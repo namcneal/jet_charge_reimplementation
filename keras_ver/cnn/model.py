@@ -86,18 +86,18 @@ class CNNSpecification(object):
         )
 
 class CNN(object):
-    def __init__(self, spec:CNNSpecification):
-        self.specification = spec
+    def __init__(self, specification:CNNSpecification):
+        self.specification = specification
         self.model = CNN.create_model(self.specification)
 
     @staticmethod
-    def create_model(comp=True, summary=True):
+    def create_model(specification:CNNSpecification, comp=True, summary=True):
         model = Sequential()
 
-        params_each_layer = zip(self.specification.conv_layer_num_filters, 
-                                self.specification.conv_layer_filter_sizes, 
-                                self.specification.conv_pooling_kernel_sizes,
-                                self.specification.conv_dropout_percents)
+        params_each_layer = zip(specification.conv_layer_num_filters, 
+                                specification.conv_layer_filter_sizes, 
+                                specification.conv_pooling_kernel_sizes,
+                                specification.conv_dropout_percents)
 
         for i,(num_filters, filter_size, pooling_kernel_size, dropout_percent) in enumerate(params_each_layer):
             kwargs : Dict = {}
@@ -115,13 +115,13 @@ class CNN(object):
 
         model.add(Flatten())
 
-        model.add(Dense(self.specification.intermediate_dense_size, activation = self.specification.num_intermediate_dense_activation))
-        model.add(Dropout(self.specification.intermediate_dense_dropout))
+        model.add(Dense(specification.intermediate_dense_size, activation = specification.num_intermediate_dense_activation))
+        model.add(Dropout(specification.intermediate_dense_dropout))
 
-        model.add(Dense(self.specification.num_final_dense_logits, activation = self.specification.final_dense_logits_activation))
+        model.add(Dense(specification.num_final_dense_logits, activation = specification.final_dense_logits_activation))
 
         if comp:
-            model.compile(loss = self.specification.loss, optimizer = self.specification.opt(lr = self.specification.lr, decay = self.specification.decay), metrics = ['accuracy'])
+            model.compile(loss = specification.loss, optimizer = specification.opt(lr = specification.lr, decay = specification.decay), metrics = ['accuracy'])
             if summary:
                 model.summary()
 
