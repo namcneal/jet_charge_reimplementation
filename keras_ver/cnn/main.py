@@ -30,7 +30,7 @@ def configure_system(args:argparse.Namespace):
 
     return directories
     
-def run_one_kappa(directories:Directories, jet_data_seeds:list[int], kappa:float,):
+def run_one_kappa(directories:Directories, jet_data_seeds:range, kappa:float,):
     from generate_images import JetChargeAttributes, generate_and_save_all_images
     from data_loading    import MemmapDataset
     from model import CNNSpecification, CNN
@@ -59,7 +59,7 @@ def main(args:argparse.Namespace):
     all_kappas = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7]
 
     for _, kappa in enumerate(all_kappas):
-        run_one_kappa(directories, kappa, all_jet_data_seeds)
+        run_one_kappa(directories, all_jet_data_seeds, kappa)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
