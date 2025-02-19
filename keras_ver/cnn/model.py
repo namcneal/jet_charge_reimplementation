@@ -97,15 +97,16 @@ class CNN(object):
                                 specification.conv_dropout_percents)
 
         for i,(num_filters, filter_size, pooling_kernel_size, dropout_percent) in enumerate(params_each_layer):
-            kwargs : Dict = {}
-            is_input_layer = i > 0
-            if is_input_layer:
-                kwargs = {'input_shape': (specification.num_image_channels, specification.image_size, specification.image_size)}
+            # kwargs : Dict = {}
+            # is_input_layer = i > 0
+            # if is_input_layer:
+            #     kwargs = {'input_shape': (specification.num_image_channels, specification.image_size, specification.image_size)}
 
             model.add(Conv2D(num_filters, filter_size, 
                                 kernel_initializer = 'he_uniform', 
                                 padding = 'valid',
                                 activation = specification.conv_activation,
+                                data_format = 'channels_first',
                                 **kwargs)) 
             model.add(MaxPooling2D(pool_size = pooling_kernel_size))
             model.add(Dropout(dropout_percent))
