@@ -163,7 +163,6 @@ def generate_images_from_all_seeds(directories:Directories, filenames:Filenames,
         # Iterate through image-label directory pairs for each of the training, validation, and testing sets
         for loop_idx, (image_dir, label_dir, assigned_indices) in enumerate(zip(train_val_test_image_dirs,
                                                                                 train_val_test_label_dirs,
-                                                                                train_test_label_dirs,  
                                                                                 assigned_train_val_test_indices)):
 
 
