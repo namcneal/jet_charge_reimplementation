@@ -16,7 +16,6 @@ if __name__ == '__main__':
     parser.add_argument('--max_data_seed',  type=int,   required=True)
     parser.add_argument('--data-year', type=int,   required=True)
     parser.add_argument('--energy-gev', type=int,   required=True)
-    parser.add_argument('--kappa',     type=float, required=True)
     parser.add_argument('--image-dir', type=str,   required=True)
     parser.add_argument('--save-dir',  type=str,   required=True)
     parser.add_argument('--batch_size', type=int,   required=True, default=512)
@@ -27,9 +26,17 @@ if __name__ == '__main__':
 
     main(directories_navigation, Filenames())
 
-
-
 def configure_system(args:argparse.Namespace):
+    for sub_dir in directories_navigation.subdirectories_with_imports:
+        sys.path.append(sub_dir)
+
+def main(args:argparse.Namespace):
+    configure_system(args)
+    
+    from generate_images import JetChargeAttributes, generate_and_save_all_images
+    from data_loading    import MemmapDataset
+    from cnn import CNNSpecification, CNN
+
 
     directories = Directories(
                     root_dir     = project_root_directory,
@@ -37,29 +44,16 @@ def configure_system(args:argparse.Namespace):
                     image_dir    = args.image_dir,
                     save_dir     = args.save_dir
     )
+
+    all_jet_data_seeds = range(args.min_data_seed, args.max_data_seed + 1)
+    all_kappas = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7]
+
+    for _, kappa in enumerate(all_kappas):
+        run_one_kappa(directories, kappa, all_jet_data_seeds)
+
     
-    filenames = Filenames(
-                    data_year = args.data_year,
-                    energy_gev = args.energy_gev,
-                    kappa = args.kappa
-    )
-
-    for sub_dir in directories_navigation.subdirectories_with_imports:
-        sys.path.append(sub_dir)
-
-    return directories, filenames
-
-
-def main(args:argparse.Namespace):
-
-    directories, filenames = configure_system(args)
-
-    from generate_images import JetChargeAttributes, generate_and_save_all_images
-    from data_loading    import MemmapDataset
-    from cnn import CNNSpecification, CNN
-
-    jet_data_seeds = range(args.min_data_seed, args.max_data_seed + 1)
-    num_jet_data_seeds = len(jet_data_seeds)
+def run_one_kappa(directories:Directories, kappa:float, jet_data_seeds:list[int]):
+    filenames = Filenames(directories.data_year, directories.energy_gev, kappa)
 
     generate_and_save_all_images(directories, filenames, jet_data_seeds)
     training_dataset = MemmapDataset.datasets_from_memmaps(directories.training_image_directory(), directories.training_label_directory())
@@ -75,6 +69,4 @@ def main(args:argparse.Namespace):
     testing_labels = testing_dataset.labels
 
     evaluate_cnn(directories, filenames, testing_images_dataloader, testing_dataset.labels)
-
-
 
