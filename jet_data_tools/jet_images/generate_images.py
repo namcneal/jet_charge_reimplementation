@@ -105,7 +105,7 @@ def generate_images_from_all_seeds(directories:Directories, filenames:Filenames,
     train_val_test_image_dirs = [directories.training_image_directory(), directories.validation_image_directory(), directories.testing_image_directory()]
     train_val_test_label_dirs = [directories.training_label_directory(), directories.validation_label_directory(), directories.testing_label_directory()]
 
-    for dir in train_test_image_dirs + train_test_label_dirs:
+    for dir in train_val_test_image_dirs + train_val_test_label_dirs:
         if not os.path.exists(dir):
             print("Creating directory: ", dir)
             os.makedirs(dir)
