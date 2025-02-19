@@ -41,8 +41,8 @@ class JetChargeAttributes(object):
         self.jet_charge_kappa = jet_charge_kappa
 
 
-def generate_and_save_all_images(directories:Directories, filenames:Filenames, seeds:range):
-    generate_jet_image_memmaps(directories, filenames, seeds)
+def generate_and_save_all_images(directories:Directories, filenames:Filenames, seeds:range, kappa):
+    generate_jet_image_memmaps(directories, filenames, seeds, kappa)
 
 ##
 
@@ -105,7 +105,7 @@ def combine_up_down_images_create_labels(up_images:np.array, down_images:np.arra
 
     return all_images, is_down
 
-def generate_images_from_all_seeds(directories:Directories, filenames:Filenames, seeds:range):
+def generate_images_from_all_seeds(directories:Directories, filenames:Filenames, seeds:range, kappa:float):
     # Multiplied by two for up and down
     total_num_images_per_seed = 2 * JetsFromFile.JET_EVENTS_PER_FILE
 
@@ -127,7 +127,7 @@ def generate_images_from_all_seeds(directories:Directories, filenames:Filenames,
     for seed_no in seeds:
         print("Generating images for seed {} of {}".format(seed_no, num_seeds))
 
-        jet_charge_data_attributes = JetChargeAttributes(year, seed_no, energy_gev, kappa)
+        jet_charge_data_attributes = JetChargeAttributes(directories.data_details.data_year, seed_no, directories.data_details.energy_gev, kappa)
 
         # Generate the up and down images for this seed as a numpy array of shape (num_images, num_channels, num_pixels, num_pixels)
         up_images, down_images = generate_images_from_seed(directories, filenames, jet_charge_data_attributes)
