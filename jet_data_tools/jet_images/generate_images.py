@@ -110,8 +110,8 @@ def generate_images_from_all_seeds(directories:Directories, filenames:Filenames,
     total_num_images_per_seed = 2 * JetsFromFile.JET_EVENTS_PER_FILE
 
     # In each of the three directories, create two subdirectories for the images and labels
-    train_test_image_dirs = [directories.training_image_directory(), directories.testing_image_directory(), directories.validation_image_directory()]
-    train_test_label_dirs = [directories.training_label_directory(), directories.testing_label_directory(), directories.validation_label_directory()]
+    train_test_image_dirs = [directories.training_image_directory(), directories.testing_image_directory()]
+    train_test_label_dirs = [directories.training_label_directory(), directories.testing_label_directory()]
 
     for dir in image_dirs + label_dirs:
         if not os.path.exists(dir):

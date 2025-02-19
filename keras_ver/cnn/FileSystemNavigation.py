@@ -80,7 +80,7 @@ class Filenames(object):
     def roc_curve_filename(self, kappa:float):
         timestamp = datetime.now().strftime("%Y-%m-%d_%H:%M")
 
-        without_file_format  ="CNN_ROC"
+        without_file_format  = "CNN_ROC"
         without_file_format += str(self.data_details)
         without_file_format += "(kappa_{})_".format(kappa)
         without_file_format += "(saved_{})_".format(timestamp)
