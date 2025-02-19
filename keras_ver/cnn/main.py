@@ -9,10 +9,9 @@ higher_directories = [os.path.abspath(os.path.join(os.path.dirname(__file__), '.
 # Append the higher directory to sys.path
 for directory in higher_directories:
     if directory not in sys.path: sys.path.append(directory)
-\
 
 # at keras_ver/cnn/FilesystemNavigation.py
-from FilesystemNavigation import Directories, Filenames
+from FileSystemNavigation import Directories, Filenames
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
