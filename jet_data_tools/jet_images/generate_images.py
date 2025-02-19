@@ -185,13 +185,13 @@ def generate_images_from_all_seeds(directories:Directories, filenames:Filenames,
         print("\tImages and labels saved to memmap files for seed {}.".format(seed_no))
         print("\tSaved in total: {} training, {} validation, {} testing images.".format(num_training, num_validation, num_testing))
 
-def generate_jet_image_memmaps(directories:Directories, filenames:Filenames, multiple_specifications:list[JetChargeAttributes]):
+def generate_jet_image_memmaps(directories:Directories, filenames:Filenames, seeds:list[int], kappa:float):
     if not os.path.exists(output_data_root_dir):
         os.makedirs(output_data_root_dir)
 
     # Generate the training, validation, and testing images and labels for all seeds
     # These are saved as memory-mapped files in the output_data_root_dir
-    generate_images_from_all_seeds(directories, multiple_specifications)
+    generate_images_from_all_seeds(directories, seeds, kappa)
 
     # Take the training images and labels and augment them to create more training data
     augment_training_data(directories)
