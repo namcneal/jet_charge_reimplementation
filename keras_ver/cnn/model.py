@@ -123,7 +123,7 @@ class CNN(object):
 
         self.model = model
 
-    def train_model(self, image_label_data:torch.Dataloader, validation_pct, batch_size, epochs):
+    def train_model(self, image_label_data:Dataloader, validation_pct, batch_size, epochs):
         history = self.model.fit(
             x                 = image_label_data,
             batch_size        = batch_size, 
@@ -145,7 +145,7 @@ class CNN(object):
         model.save(save_directory + filename)
 
     def evaluate_model(self, directories:Directories, filenames:Filenames,
-                        image_dataloader:torch.DataLoader,
+                        image_dataloader:DataLoader,
                         labels:np.ndarray):
 
         probability_predictions = model.predict(image_dataloader)
