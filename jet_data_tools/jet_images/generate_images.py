@@ -219,8 +219,8 @@ def augment_training_data(directories:Directories):
         # The actual image augmentation. It includes: 3 reflections, 4 translations
         augmented_images, augmented_labels = JetImage.augment_many_images(images, labels)
 
-        memmap_ninja.np_extend(training_image_memmap, augmented_images)
-        memmap_ninja.np_extend(training_label_memmap, augmented_labels)
+        mmap_ninja.np_extend(training_image_memmap, augmented_images)
+        mmap_ninja.np_extend(training_label_memmap, augmented_labels)
 
 def verify_all_memmap_elements(memmap_dir:str):
     loaded = mmap_ninja.np_open_existing(memmap_dir)
