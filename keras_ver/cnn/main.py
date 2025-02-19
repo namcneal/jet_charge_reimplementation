@@ -2,12 +2,12 @@ import argparse
 import os 
 import sys 
 
-print(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 higher_directories = [os.path.abspath(os.path.join(os.path.dirname(__file__), '..')), 
                       os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
                     ]
 # Append the higher directory to sys.path
 for directory in higher_directories:
+    print(directory)
     if directory not in sys.path: sys.path.append(directory)
 
 # at keras_ver/cnn/FilesystemNavigation.py
