@@ -18,14 +18,14 @@ if __name__ == '__main__':
 
     parser.add_argument('--raw-jet-data-dir', type=str,   required=True)
     parser.add_argument('--min-data-seed',  type=int,   required=True)
-    parser.add_argument('--max_data_seed',  type=int,   required=True)
+    parser.add_argument('--max-data-seed',  type=int,   required=True)
     parser.add_argument('--data-year', type=int,   required=True)
     parser.add_argument('--energy-gev', type=int,   required=True)
     parser.add_argument('--image-dir', type=str,   required=True)
     parser.add_argument('--save-dir',  type=str,   required=True)
-    parser.add_argument('--batch_size', type=int,   required=True, default=512)
-    parser.add_argument('--num_epochs', type=int,   required=True, default=35)
-    parser.add_argument('--val_pct',    type=float, required=True, default=1/8)
+    parser.add_argument('--batch_size', type=int,   default=512)
+    parser.add_argument('--num_epochs', type=int,   default=35)
+    parser.add_argument('--val_pct',    type=float, default=1/8)
 
     args = parser.parse_args()
 
