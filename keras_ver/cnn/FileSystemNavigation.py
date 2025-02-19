@@ -1,3 +1,6 @@
+import os
+import sys
+
 higher_directories = [os.path.abspath(os.path.join(os.path.dirname(__file__), '..')), 
                       os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
                     ]
@@ -7,7 +10,6 @@ for directory in higher_directories:
 
 ##
 
-import os
 
 from data_loading import dataset_details_str, DataDetails
 
