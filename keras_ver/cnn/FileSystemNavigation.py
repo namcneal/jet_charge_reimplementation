@@ -49,6 +49,13 @@ class Directories(object):
     def training_label_directory(self):
         return os.path.join(self.training_directory(), "labels")
 
+    def validation_directory(self):
+        return os.path.join(self.save_data_directory, str(self.dataset_details), "validation")
+    def validation_image_directory(self):
+        return os.path.join(self.validation_directory(), "images")
+    def validation_label_directory(self):
+        return os.path.join(self.validation_directory(), "labels")
+
     def testing_directory(self):
         return os.path.join(self.raw_data_directory, str(self.dataset_details),  "testing")
     def testing_image_directory(self):
@@ -57,8 +64,9 @@ class Directories(object):
         return os.path.join(self.testing_directory(), "labels")
 
     def all_output_data_directories(self):
-        return [self.training_directory(), self.training_image_directory(), self.training_label_directory(),
-                self.testing_directory(), self.testing_image_directory(), self.testing_label_directory()]
+        return [self.training_directory(),   self.training_image_directory(),   self.training_label_directory(),
+                self.validation_directory(), self.validation_image_directory(), self.validation_label_directory(),
+                self.testing_directory(),    self.testing_image_directory(),    self.testing_label_directory()]
 
 class Filenames(object):
     def __init__(self, data_details:DataDetails):

@@ -123,13 +123,13 @@ class CNN(object):
                 model.summary()
 
         return model
-        
-    def train_model(self, image_label_data:DataLoader, validation_pct, batch_size, epochs):
+
+    def train_model(self, training_image_label_data:DataLoader, validation_image_label_data:DataLoader, batch_size, epochs):
         history = self.model.fit(
-            x                 = image_label_data,
+            x                 = training_image_label_data,
+            validation_data   = validation_image_label_data,
             batch_size        = batch_size, 
             epochs            = epochs, 
-            validation_split  = validation_pct,
             verbose           = 1,
             shuffle           = True,
         )

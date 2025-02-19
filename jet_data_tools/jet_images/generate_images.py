@@ -102,8 +102,8 @@ def generate_images_from_all_seeds(directories:Directories, filenames:Filenames,
     total_num_images_per_seed = 2 * JetsFromFile.JET_EVENTS_PER_FILE
 
     # In each of the three directories, create two subdirectories for the images and labels
-    train_test_image_dirs = [directories.training_image_directory(), directories.testing_image_directory()]
-    train_test_label_dirs = [directories.training_label_directory(), directories.testing_label_directory()]
+    train_val_test_image_dirs = [directories.training_image_directory(), directories.validation_image_directory(), directories.testing_image_directory()]
+    train_val_test_label_dirs = [directories.training_label_directory(), directproes.validation_label_directory(), directories.testing_label_directory()]
 
     for dir in train_test_image_dirs + train_test_label_dirs:
         if not os.path.exists(dir):
@@ -113,8 +113,8 @@ def generate_images_from_all_seeds(directories:Directories, filenames:Filenames,
     # These will be the memmap files for all the images and labels, for every seed combined.
     # There are two for each of the training, validation, and testing data, so six in total.
     # Each one of the pair lives in the subdirectories created above.
-    train_test_image_memmaps = [None, None]
-    train_test_label_memmaps = [None, None]
+    train_val_test_image_memmaps = [None, None,None]
+    train_val_test_label_memmaps = [None, None,None]
 
     num_seeds = len(seeds)
     for seed_no in seeds:
@@ -145,38 +145,43 @@ def generate_images_from_all_seeds(directories:Directories, filenames:Filenames,
         print("\tAll jets for this seed are processed. Saving 80 pct to training and 20 pct testing.")
 
         # Compute the number of samples that will go into each of the training, validation, and testing sets
-        # The training-esting split is 80-20
+        # The training-testing split is 80-20
         TRAIN_PCT = 80
+        TEST_PCT  = 10
         num_training   = int(TRAIN_PCT/100 * total_num_images_per_seed)
-        num_testing    = total_num_images_per_seed - num_training 
+        num_validation = int((100-TRAIN_PCT-TEST_PCT)/100 * total_num_images_per_seed)
+        num_testing    = total_num_images_per_seed - num_training - num_validation
+
         # Assign each image to the training, validation, or testing set based on the computed split
         all_indices = np.arange(total_num_images_per_seed, dtype=np.int32)
         training_indices   = all_indices[:num_training]
-        testing_indices    = all_indices[num_training:] 
+        validation_indices = all_indices[num_training:num_training+num_validation]
+        testing_indices    = all_indices[num_training+num_validation:]
         
-        assigned_train_test_indices = [training_indices, testing_indices]
+        assigned_train_val_test_indices = [training_indices, validation_indices, testing_indices]
 
         # Iterate through image-label directory pairs for each of the training, validation, and testing sets
-        for loop_idx, (image_dir, label_dir, assigned_indices) in enumerate(zip(train_test_image_dirs,
+        for loop_idx, (image_dir, label_dir, assigned_indices) in enumerate(zip(train_val_test_image_dirs,
+                                                                                train_val_test_label_dirs,
                                                                                 train_test_label_dirs,  
-                                                                                assigned_train_test_indices)):
+                                                                                assigned_train_val_test_indices)):
 
 
             images_from_assigned_indices = all_images[assigned_indices,:,:,:]
 
             # Given the first seed, create the memmap files for each of the training, validation, and testing sets
-            if train_test_image_memmaps[loop_idx] is None:
-                train_test_image_memmaps[loop_idx] = mmap_ninja.np_from_ndarray(image_dir, images_from_assigned_indices)
-                train_test_label_memmaps[loop_idx] = mmap_ninja.np_from_ndarray(label_dir, all_labels[assigned_indices,:])
+            if train_val_test_image_memmaps[loop_idx] is None:
+                train_val_test_image_memmaps[loop_idx] = mmap_ninja.np_from_ndarray(image_dir, images_from_assigned_indices)
+                train_val_test_label_memmaps[loop_idx] = mmap_ninja.np_from_ndarray(label_dir, all_labels[assigned_indices,:])
             
 
             # Otherwise we append the new images and labels to the existing memmap files
             else:
-                mmap_ninja.np_extend(train_test_image_memmaps[loop_idx], images_from_assigned_indices)
-                mmap_ninja.np_extend(train_test_label_memmaps[loop_idx], all_labels[assigned_indices,:])
+                mmap_ninja.np_extend(train_val_test_image_memmaps[loop_idx], images_from_assigned_indices)
+                mmap_ninja.np_extend(train_val_test_label_memmaps[loop_idx], all_labels[assigned_indices,:])
 
         print("\tImages and labels saved to memmap files for seed {}.".format(seed_no))
-        print("\tSaved in total: {} training, {} testing images.".format(num_training, num_testing))
+        print("\tSaved in total: {} training, {} validation, and {} testing images.".format(num_training, num_validation, num_testing))
 
 def generate_jet_image_memmaps(directories:Directories, filenames:Filenames, seeds:range, kappa:float): 
     # Generate the training, validation, and testing images and labels for all seeds
@@ -233,7 +238,8 @@ def verify_all_memmap_elements(memmap_dir:str):
 def verify_all_memmaps(directories:Directories):
     for dir in [directories.training_image_directory(), 
                 directories.training_label_directory(), 
-
+                directories.validation_image_directory(),
+                directories.validation_label_directory(),
                 directories.testing_image_directory(), 
                 directories.testing_label_directory()]:
                 

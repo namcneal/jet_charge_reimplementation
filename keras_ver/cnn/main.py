@@ -39,13 +39,16 @@ def run_one_kappa(args:argparse.Namespace, directories:Directories, jet_data_see
     filenames = Filenames(directories.dataset_details)
 
     generate_and_save_all_images(directories, filenames, jet_data_seeds, kappa)
-    training_dataset = MemmapDataset.datasets_from_memmaps(directories.training_image_directory(), directories.training_label_directory())
-    training_data_loader = DataLoader(training_dataset)
+
+    training_dataset   = MemmapDataset.datasets_from_memmaps(directories.training_image_directory(),   directories.training_label_directory())
+    validation_dataset = MemmapDataset.datasets_from_memmaps(directories.validation_image_directory(), directories.validation_label_directory())
+    training_data_loader   = DataLoader(training_dataset)
+    validation_data_loader = DataLoader(validation_dataset)
 
     cnn_specification = CNNSpecification.default()
     cnn_model         = CNN(cnn_specification)
 
-    training_history = cnn_model.train_model(training_data_loader, args.val_pct, args.batch_size, args.num_epochs)
+    training_history = cnn_model.train_model(training_data_loader,validation_data_loader,  args.val_pct, args.batch_size, args.num_epochs)
 
     testing_dataset = MemmapDataset.datasets_from_memmaps(directories.testing_image_directory(), directories.testing_label_directory())
     testing_images_dataloader = testing_dataset.just_images()
