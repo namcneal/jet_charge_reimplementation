@@ -103,7 +103,7 @@ def generate_images_from_all_seeds(directories:Directories, filenames:Filenames,
 
     # In each of the three directories, create two subdirectories for the images and labels
     train_val_test_image_dirs = [directories.training_image_directory(), directories.validation_image_directory(), directories.testing_image_directory()]
-    train_val_test_label_dirs = [directories.training_label_directory(), directproes.validation_label_directory(), directories.testing_label_directory()]
+    train_val_test_label_dirs = [directories.training_label_directory(), directories.validation_label_directory(), directories.testing_label_directory()]
 
     for dir in train_test_image_dirs + train_test_label_dirs:
         if not os.path.exists(dir):
