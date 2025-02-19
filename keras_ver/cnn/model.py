@@ -112,7 +112,7 @@ class CNN(object):
                                 activation = specification.conv_activation,
                                 **kwargs)) 
             model.add(MaxPooling2D(pool_size = pooling_kernel_size))
-            model.add(dropout_layer(dropout_percent))
+            model.add(Dropout(dropout_percent))
 
         model.add(Flatten())
 
