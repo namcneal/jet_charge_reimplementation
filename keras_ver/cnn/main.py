@@ -13,10 +13,6 @@ for directory in higher_directories:
 
 # at keras_ver/cnn/FilesystemNavigation.py
 from FileSystemNavigation import Directories, Filenames, DataDetails
-from generate_images import JetChargeAttributes, generate_and_save_all_images
-from data_loading    import MemmapDataset
-from model import CNNSpecification, CNN
-
 
 def configure_system(args:argparse.Namespace):
     data_details = DataDetails(args.data_year, args.energy_gev)
