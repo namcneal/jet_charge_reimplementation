@@ -88,9 +88,10 @@ class CNNSpecification(object):
 class CNN(object):
     def __init__(self, spec:CNNSpecification):
         self.specification = spec
-        self.model = None
+        self.model = create_model(self.specification)
 
-    def create_model(self):
+    @staticmethod
+    def create_model(comp=True, summary=True):
         model = Sequential()
 
         params_each_layer = zip(self.specification.conv_layer_num_filters, 
