@@ -59,6 +59,10 @@ class Directories(object):
     def testing_label_directory(self):
         return os.path.join(self.testing_directory(), "labels")
 
+    def all_output_data_directories(self):
+        return [self.training_directory(), self.training_image_directory(), self.training_label_directory(),
+                self.testing_directory(), self.testing_image_directory(), self.testing_label_directory()]
+
 class Filenames(object):
     def __init__(self, data_details:DataDetails):
         self.data_details = data_details
