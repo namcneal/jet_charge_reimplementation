@@ -40,9 +40,7 @@ if __name__ == '__main__':
     parser.add_argument('--num_epochs', type=int,   default=35)
     parser.add_argument('--val_pct',    type=float, default=1/8)
 
-    args = parser.parse_args()
-
-    main(directories_navigation, Filenames())
+    main(parser.parse_args())
 
 def configure_system(args:argparse.Namespace):
     directories = Directories(
