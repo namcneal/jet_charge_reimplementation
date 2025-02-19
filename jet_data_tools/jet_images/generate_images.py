@@ -185,7 +185,7 @@ def generate_images_from_all_seeds(directories:Directories, filenames:Filenames,
         print("\tImages and labels saved to memmap files for seed {}.".format(seed_no))
         print("\tSaved in total: {} training, {} validation, {} testing images.".format(num_training, num_validation, num_testing))
 
-def generate_jet_image_memmaps(directories:Directories, filenames:Filenames, multiple_specifications:list[JetImageSpecification]):
+def generate_jet_image_memmaps(directories:Directories, filenames:Filenames, multiple_specifications:list[JetChargeAttributes]):
     if not os.path.exists(output_data_root_dir):
         os.makedirs(output_data_root_dir)
 
