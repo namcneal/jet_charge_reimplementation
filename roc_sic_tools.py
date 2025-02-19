@@ -1,3 +1,6 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import os
 
 def down_quark_sic_curves(model_dir:str, model_filename:str,
                         output_data_root_dir:str, energy_gev:int=1000, 
