@@ -188,7 +188,7 @@ def generate_images_from_all_seeds(directories:Directories, filenames:Filenames,
 def generate_jet_image_memmaps(directories:Directories, filenames:Filenames, seeds:list[int], kappa:float): 
     # Generate the training, validation, and testing images and labels for all seeds
     # These are saved as memory-mapped files in the output_data_root_dir
-    generate_images_from_all_seeds(directories, seeds, kappa)
+    generate_images_from_all_seeds(directories, filenames, seeds, kappa)
 
     # Take the training images and labels and augment them to create more training data
     augment_training_data(directories)
