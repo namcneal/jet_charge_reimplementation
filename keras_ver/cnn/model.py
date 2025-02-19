@@ -79,7 +79,7 @@ class CNNSpecification(object):
             final_dense_logits_activation='softmax',
 
             loss='categorical_crossentropy',
-            opt=Adam,
+            opt=keras.optimizers.Adam,
             lr=0.001,
             decay=0.0
         )
