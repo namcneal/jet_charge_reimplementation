@@ -27,7 +27,7 @@ def configure_system(args:argparse.Namespace):
     for sub_dir in directories.subdirectories_with_imports:
         sys.path.append(sub_dir)
 
-
+    return directories
     
 def run_one_kappa(directories:Directories, jet_data_seeds:list[int], kappa:float,):
     filenames = Filenames(directories.dataset_details)
