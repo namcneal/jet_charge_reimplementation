@@ -15,7 +15,7 @@ from FileSystemNavigation import Directories, Filenames
 
 def configure_system(args:argparse.Namespace):
     directories = Directories(
-                    root_dir     = repository_root_directory,
+                    repo_root_dir     = repository_root_directory,
                     raw_data_dir = args.raw_jet_data_dir,
                     image_dir    = args.image_dir,
                     save_dir     = args.save_dir
