@@ -97,7 +97,7 @@ class CNN(object):
                                 specification.conv_dropout_percents)
 
         for i,(num_filters, filter_size, pooling_kernel_size, dropout_percent) in enumerate(params_each_layer):
-            # kwargs : Dict = {}
+            kwargs : Dict = {}
             # is_input_layer = i > 0
             # if is_input_layer:
             #     kwargs = {'input_shape': (specification.num_image_channels, specification.image_size, specification.image_size)}
