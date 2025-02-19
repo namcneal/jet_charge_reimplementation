@@ -2,15 +2,12 @@ import sys
 import os
 
 import numpy as np
-
 import matplotlib.pyplot as plt
-from math import ceil, floor
+import matplotlib.image as mpimg
 
-import numpy as np
+from math import ceil, floor
 import random
 from random import shuffle
-
-import matplotlib.image as mpimg
 
 from pathlib import Path
 
