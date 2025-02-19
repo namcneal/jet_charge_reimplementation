@@ -49,7 +49,7 @@ def generate_and_save_all_images(directories:Directories, filenames:Filenames, s
 
 def generate_images_from_seed(directories:Directories, filenames:Filenames, jet_charge_data_attributes:JetChargeAttributes):
     seed   = jet_charge_data_attributes.seed
-    energy = jet_charge_data_attributes.energy_gev
+    energy_gev = jet_charge_data_attributes.energy_gev
     kappa  = jet_charge_data_attributes.jet_charge_kappa
     year   = jet_charge_data_attributes.year
 
