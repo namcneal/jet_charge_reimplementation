@@ -116,8 +116,8 @@ def generate_images_from_all_seeds(directories:Directories, filenames:Filenames,
     # These will be the memmap files for all the images and labels, for every seed combined.
     # There are two for each of the training, validation, and testing data, so six in total.
     # Each one of the pair lives in the subdirectories created above.
-    test_train_image_memmaps = [None, None]
-    test_train_label_memmaps = [None, None]
+    train_test_image_memmaps = [None, None]
+    train_test_label_memmaps = [None, None]
 
     num_seeds = len(seeds)
     for seed_no in seeds:
