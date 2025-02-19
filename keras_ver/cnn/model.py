@@ -1,3 +1,5 @@
+import os, sys
+
 higher_directories = [os.path.abspath(os.path.join(os.path.dirname(__file__), '..')), 
                       os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
                     ]
