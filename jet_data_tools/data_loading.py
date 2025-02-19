@@ -12,6 +12,8 @@ from FileSystemNavigation import Directories, Filenames
 
 ##
 
+from torch.utils.data import Dataset
+
 class MemmapDataset(Dataset):
     def __init__(self, image_memmap, label_memmap):
         self.images = image_memmap
