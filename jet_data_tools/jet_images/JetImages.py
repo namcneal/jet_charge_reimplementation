@@ -166,7 +166,7 @@ class JetImage(object):
         all_versions[6][:,:,:, 0] = 0 # black out the top row
 
         all_versions = np.concatenate(all_versions, axis=0)
-        all_labels   = np.concatenate(all_labels, axis=0)
+        all_labels   = np.concatenate(all_labels,   axis=0)
 
         return (all_versions, all_labels)
     

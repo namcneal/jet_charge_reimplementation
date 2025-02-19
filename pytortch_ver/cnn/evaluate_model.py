@@ -20,6 +20,10 @@ def main():
 
     down_quark_efficiency_roc(model_dir, model_filename, base_data_dir, energy_gev, kappa)
 
+def down_quark_sic_curves(model_dir:str, model_filename:str,
+                        output_data_root_dir:str, energy_gev:int=1000, 
+                        kappa:float=0.2):
+    pass 
 
 def down_quark_efficiency_roc(model_dir:str, model_filename:str, 
                               output_data_root_dir:str, energy_gev:int=1000, 

@@ -11,7 +11,7 @@ class ConvolutionalLayer(torch.nn.Module):
         """
         The convolutional layers and the first dense layer have ReLU activations
         """
-        self.conv_activation = torch.nn.ReLU() #PP -- The code in heppy uses ELU for the activation function, despite the paper
+        self.conv_activation = torch.nn.SiLU() #PP -- The code in heppy uses ELU for the activation function, despite the paper saying ReLU
         self.max_pooling     = torch.nn.MaxPool2d(kernel_size=pooling_kernel)
         self.dropout = torch.nn.Dropout2d(p=dropout)
 
@@ -33,7 +33,7 @@ class PostConvDenseLayer(torch.nn.Module):
         """
         The convolutional layers and the first dense layer have ReLU activations
         """
-        self.dense_activation = torch.nn.ReLU()
+        self.dense_activation = torch.nn.SiLU()
         self.dropout = torch.nn.Dropout(p=dropout)
 
     def forward(self, x):
