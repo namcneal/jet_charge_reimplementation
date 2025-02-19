@@ -11,8 +11,7 @@ for directory in higher_directories:
     if directory not in sys.path: sys.path.append(directory)
 
 # at keras_ver/cnn/FilesystemNavigation.py
-from FileSystemNavigation import Directories, Filenames
-from data_loading import DataDetails
+from FileSystemNavigation import Directories, Filenames, DataDetails
 
 def configure_system(args:argparse.Namespace):
     data_details = DataDetails(args.data_year, args.energy_gev)
