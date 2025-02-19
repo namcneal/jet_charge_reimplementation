@@ -12,7 +12,13 @@ for directory in higher_directories:
 
 ##
 
-from data_loading import dataset_details_str, DataDetails
+class DataDetails(object):
+    def __init__(self, data_year:int, energy_gev:intt):
+        self.data_year  = data_year
+        self.energy_gev = energy_gev
+
+    def __str__(self):
+        return "_(year_{})_(energy_{}_gev)_".format(self.data_year, self.energy_gev)
 
 class Directories(object):
     def __init__(self, repo_root_dir:str, raw_data_dir:str, image_dir:str, save_dir:str,
@@ -61,19 +67,20 @@ class Filenames(object):
     def saved_model_filename(self, kappa:float):
         timestamp = datetime.now().strftime("%Y-%m-%d_%H:%M")
 
-        without_file_format  = "CNN_"
-        without_file_format += self.data_details_str()
-        without_file_format += "_kappa_{}".format(kappa)
-        without_file_format += "_saved_{}".format(timestamp)
+        without_file_format  = "CNN"
+        without_file_format += str(self.data_details)
+        without_file_format += "(kappa_{})_".format(kappa)
+        without_file_format += "(saved_{})_".format(timestamp)
 
         return without_file_format + ".keras"
 
     def roc_curve_filename(self, kappa:float):
         timestamp = datetime.now().strftime("%Y-%m-%d_%H:%M")
 
-        without_file_format  ="CNN_ROC_"
-        without_file_format += self.dataset_details_str()
-        without_file_format += "_(saved_{})".format(timestamp)
+        without_file_format  ="CNN_ROC"
+        without_file_format += str(self.data_details)
+        without_file_format += "(kappa_{})_".format(kappa)
+        without_file_format += "(saved_{})_".format(timestamp)
 
         return without_file_format + ".png"
         

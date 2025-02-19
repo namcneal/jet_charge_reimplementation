@@ -10,12 +10,6 @@ from FileSystemNavigation import Directories, Filenames
 
 ##
 
-
-class DataDetails(object):
-    def __init__(self, data_year:int, energy_gev:intt):
-        self.data_year  = data_year
-        self.energy_gev = energy_gev
-
 class MemmapDataset(Dataset):
     def __init__(self, image_memmap, label_memmap):
         self.images = image_memmap
