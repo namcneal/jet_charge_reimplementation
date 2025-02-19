@@ -122,7 +122,7 @@ class CNN(object):
         model.add(Dense(specification.num_final_dense_logits, activation = specification.final_dense_logits_activation))
 
         if comp:
-            model.compile(loss = specification.loss, optimizer = specification.opt(lr = specification.lr, decay = specification.decay), metrics = ['accuracy'])
+            model.compile(loss = specification.loss, optimizer = specification.opt, metrics = ['accuracy'])
             if summary:
                 model.summary()
 
