@@ -208,7 +208,7 @@ def augment_training_data(directories:Directories):
 
     # The training data is augmented in chunks rather than the full set at once
     num_images_at_a_time = 5000
-    num_chunks = ceil(len(training_image_memmaps) / num_images_at_a_time) 
+    num_chunks = ceil(len(training_image_memmap) / num_images_at_a_time) 
     split_images = np.array_split(training_image_memmap, num_chunks)
     split_labels = np.array_split(training_label_memmap , num_chunks)
 
