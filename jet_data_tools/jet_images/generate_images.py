@@ -145,7 +145,7 @@ def generate_images_from_all_seeds(directories:Directories, filenames:Filenames,
         # Convert the labels to a one-hot encoding
         all_labels = torch.nn.functional.one_hot(torch.from_numpy(is_down).long(), 2).numpy()
 
-        print("\tAll jets for this seed are processed. Saving 80 pct to training, 10 pct to validation, and 10 pct to testing.")
+        print("\tAll jets for this seed are processed. Saving 80 pct to training and 20 pct testing.")
 
         # Compute the number of samples that will go into each of the training, validation, and testing sets
         # The training-esting split is 80-20

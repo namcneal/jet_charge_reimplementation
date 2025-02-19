@@ -10,9 +10,8 @@ for directory in higher_directories:
 
 from FileSystemNavigation import Directories, Filenames
 
-##
-
 from torch.utils.data import Dataset
+import mmap_ninja
 
 class MemmapDataset(Dataset):
     def __init__(self, image_memmap, label_memmap):
