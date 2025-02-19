@@ -14,14 +14,14 @@ for directory in higher_directories:
 from FileSystemNavigation import Directories, Filenames, DataDetails
 
 def configure_system(args:argparse.Namespace):
-    data_details = DataDetails(args.data_year, args.energy_gev)
+    dataset_details = DataDetails(args.data_year, args.energy_gev)
 
     directories = Directories(
                     repo_root_dir= repository_root_directory,
                     raw_data_dir = args.raw_jet_data_dir,
                     image_dir    = args.image_dir,
                     save_dir     = args.save_dir,
-                    data_details = data_details
+                    dataset_details = dataset_details
     )
 
     for sub_dir in directories_navigation.subdirectories_with_imports:

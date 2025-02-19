@@ -21,8 +21,10 @@ class DataDetails(object):
         return "_(year_{})_(energy_{}_gev)_".format(self.data_year, self.energy_gev)
 
 class Directories(object):
-    def __init__(self, repo_root_dir:str, raw_data_dir:str, image_dir:str, save_dir:str,
-                 data_details:DataDetails):
+    def __init__(self, repo_root_dir:str, 
+                    raw_data_dir:str, image_dir:str, save_dir:str,
+                    data_details:DataDetails):
+
         self.dataset_details
 
         # References the repository root directory
