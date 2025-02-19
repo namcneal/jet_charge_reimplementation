@@ -124,6 +124,7 @@ def generate_images_from_all_seeds(directories:Directories, filenames:Filenames,
     test_and_train_image_memmaps = [None, None]
     test_and_train_label_memmaps = [None, None]
 
+    num_seeds = len(seeds)
     for seed_no in seeds:
         print("Generating images for seed {} of {}".format(seed_no, num_seeds))
 
