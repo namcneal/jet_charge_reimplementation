@@ -65,13 +65,8 @@ def generate_images_from_seed(directories:Directories, filenames:Filenames, jet_
     if len(no_particles) > 0:
         raise ValueError("Some jets have no particles")
     
-
-    if num_channels == 2:
-        up_images   = np.stack([JetImage.two_channel_image_from_jet(jet, kappa) for jet in up_jets],   axis=0)
-        down_images = np.stack([JetImage.two_channel_image_from_jet(jet, kappa) for jet in down_jets], axis=0)
-
-    else:   
-        raise ValueError("Only two channels are supported")
+    up_images   = np.stack([JetImage.two_channel_image_from_jet(jet, kappa) for jet in up_jets],   axis=0)
+    down_images = np.stack([JetImage.two_channel_image_from_jet(jet, kappa) for jet in down_jets], axis=0)
     
     return up_images, down_images
 
