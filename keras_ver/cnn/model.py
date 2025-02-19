@@ -88,7 +88,7 @@ class CNNSpecification(object):
 class CNN(object):
     def __init__(self, spec:CNNSpecification):
         self.specification = spec
-        self.model = create_model(self.specification)
+        self.model = CNN.create_model(self.specification)
 
     @staticmethod
     def create_model(comp=True, summary=True):
