@@ -36,7 +36,8 @@ class CNNSpecification(object):
                     num_final_dense_logits, 
                     final_dense_logits_activation, 
 
-                    loss, opt, lr, decay):
+                    loss, 
+                    opt,):
 
         self.image_size = image_size
         self.num_image_channels = num_image_channels
@@ -57,9 +58,6 @@ class CNNSpecification(object):
 
         self.loss = loss
         self.opt = opt
-        self.lr = lr
-
-        self.decay = decay
 
     @staticmethod
     def default():
@@ -81,8 +79,7 @@ class CNNSpecification(object):
             final_dense_logits_activation='softmax',
 
             loss='categorical_crossentropy',
-            opt=keras.optimizers.Adam(learning_rate=0.001),
-            decay=0.0
+            opt=keras.optimizers.Adam(learning_rate=0.001, weight_decay=0.0),
         )
 
 class CNN(object):
