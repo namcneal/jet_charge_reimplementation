@@ -109,7 +109,7 @@ class CNN(object):
             model.add(Conv2D(num_filters, filter_size, 
                                 kernel_initializer = 'he_uniform', 
                                 padding = 'valid',
-                                activation = act,
+                                activation = specification.conv_activation,
                                 **kwargs)) 
             model.add(MaxPooling2D(pool_size = pooling_kernel_size))
             model.add(dropout_layer(dropout_percent))
