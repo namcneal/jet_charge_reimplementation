@@ -11,12 +11,6 @@ for directory in higher_directories:
 
 from keras.models import Sequential, Model
 from keras.layers import Dense, Dropout, Activation, Flatten, Conv2D, MaxPooling2D
-from keras import backend as K
-from keras import regularizers
-
-from .recursive import RecursiveLayer
-from .multi_K import Kappa_Layer
-from .utils import *
 
 from FileSystemNavigation import Directories, Filenames
 from roc_sic_tools import roc_curve, sic_curve
