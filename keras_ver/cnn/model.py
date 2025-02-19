@@ -31,7 +31,7 @@ class CNNSpecification(object):
 
                     intermediate_dense_size, 
                     intermediate_dense_dropout, 
-                    num_intermediate_dense_activation, 
+                    intermediate_dense_activation, 
 
                     num_final_dense_logits, 
                     final_dense_logits_activation, 
@@ -116,7 +116,7 @@ class CNN(object):
 
         model.add(Flatten())
 
-        model.add(Dense(specification.intermediate_dense_size, activation = specification.num_intermediate_dense_activation))
+        model.add(Dense(specification.intermediate_dense_size, activation = specification.intermediate_dense_activation))
         model.add(Dropout(specification.intermediate_dense_dropout))
 
         model.add(Dense(specification.num_final_dense_logits, activation = specification.final_dense_logits_activation))
