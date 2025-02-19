@@ -13,7 +13,7 @@ for directory in higher_directories:
 ##
 
 class DataDetails(object):
-    def __init__(self, data_year:int, energy_gev:intt):
+    def __init__(self, data_year:int, energy_gev:int):
         self.data_year  = data_year
         self.energy_gev = energy_gev
 
