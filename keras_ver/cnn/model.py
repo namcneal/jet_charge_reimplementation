@@ -8,7 +8,7 @@ for directory in higher_directories:
     if directory not in sys.path: sys.path.append(directory)
 
 ##
-import torch
+from torch.utils.data import DataLoader
 from keras.models import Sequential, Model
 from keras.layers import Dense, Dropout, Activation, Flatten, Conv2D, MaxPooling2D
 
