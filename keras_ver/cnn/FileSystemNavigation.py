@@ -2,14 +2,15 @@ import os
 import sys
 
 higher_directories = [os.path.abspath(os.path.join(os.path.dirname(__file__), '..')), 
-                      os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
+                      os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')),
+                      os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..'))
+
                     ]
 # Append the higher directory to sys.path
 for directory in higher_directories:
     if directory not in sys.path: sys.path.append(directory)
 
 ##
-
 
 from data_loading import dataset_details_str, DataDetails
 
