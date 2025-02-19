@@ -22,8 +22,8 @@ class DataDetails(object):
 
 class Directories(object):
     def __init__(self, repo_root_dir:str, 
-                    raw_data_dir:str, image_dir:str, save_dir:str,
-                    data_details:DataDetails):
+                raw_data_dir:str, image_dir:str, save_dir:str,
+                data_details:DataDetails):
 
         self.dataset_details = data_details
 
@@ -38,7 +38,7 @@ class Directories(object):
                             "keras_ver/cnn",]:
             self.subdirectories_with_imports.append(os.path.join(self.repository_root_directory, subdir_name))
 
-        self.raw_data_directory  = data_dir
+        self.raw_data_directory  = raw_data_dir
         self.image_directory     = image_dir
         self.save_data_directory = save_dir
 
