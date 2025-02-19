@@ -153,6 +153,6 @@ class CNN(object):
         plot_dir  = directories.save_data_directory
         plot_name = filenames.roc_curve_filename(filenames.kappa, filenames.energy_gev)
 
-        roc_curve(probability_predictions, labels, plot_dir, plot_name)
+        down_quark_efficiency_roc(probability_predictions, labels, plot_dir, plot_name)
 
 
