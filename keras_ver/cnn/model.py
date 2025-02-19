@@ -14,7 +14,7 @@ from torch.utils.data import DataLoader
 from keras.models import Sequential, Model
 from keras.layers import Dense, Dropout, Activation, Flatten, Conv2D, MaxPooling2D
 
-from FileSystemNavigation import Directories, Filenames
+from FileSystemNavigation import Directories, Filenames, DataDetails
 from roc_sic_tools import down_quark_efficiency_roc
 
 class CNNSpecification(object):
