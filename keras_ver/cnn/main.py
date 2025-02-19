@@ -39,7 +39,7 @@ def run_one_kappa(directories:Directories, jet_data_seeds:range, kappa:float,):
 
     generate_and_save_all_images(directories, filenames, jet_data_seeds, kappa)
     training_dataset = MemmapDataset.datasets_from_memmaps(directories.training_image_directory(), directories.training_label_directory())
-    training_data_loader = DataLader(training_dataset)
+    training_data_loader = DataLoader(training_dataset)
 
     cnn_specification = CNNSpecification.default()
     cnn_model         = CNN(cnn_specification)
