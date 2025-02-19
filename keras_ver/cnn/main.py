@@ -32,23 +32,22 @@ if __name__ == '__main__':
     main(directories_navigation, Filenames())
 
 def configure_system(args:argparse.Namespace):
-    for sub_dir in directories_navigation.subdirectories_with_imports:
-        sys.path.append(sub_dir)
-
-def main(args:argparse.Namespace):
-    configure_system(args)
-    
-    from generate_images import JetChargeAttributes, generate_and_save_all_images
-    from data_loading    import MemmapDataset
-    from cnn import CNNSpecification, CNN
-
-
     directories = Directories(
                     root_dir     = project_root_directory,
                     raw_data_dir = args.raw_jet_data_dir,
                     image_dir    = args.image_dir,
                     save_dir     = args.save_dir
     )
+
+    for sub_dir in directories_navigation.subdirectories_with_imports:
+        sys.path.append(sub_dir)
+
+def main(args:argparse.Namespace):
+    directories = configure_system(args)
+    
+    from generate_images import JetChargeAttributes, generate_and_save_all_images
+    from data_loading    import MemmapDataset
+    from cnn import CNNSpecification, CNN
 
     all_jet_data_seeds = range(args.min_data_seed, args.max_data_seed + 1)
     all_kappas = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7]
