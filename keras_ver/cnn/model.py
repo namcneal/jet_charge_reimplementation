@@ -104,7 +104,7 @@ class CNN(object):
             kwargs : Dict = {}
             is_input_layer = i > 0
             if is_input_layer:
-                kwargs = {'input_shape': (specification.num_image_channels, self.specification.image_size, self.specification.image_size)}
+                kwargs = {'input_shape': (specification.num_image_channels, specification.image_size, specification.image_size)}
 
             model.add(Conv2D(num_filters, filter_size, 
                                 kernel_initializer = 'he_uniform', 
