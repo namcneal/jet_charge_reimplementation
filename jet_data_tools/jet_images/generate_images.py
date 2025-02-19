@@ -128,7 +128,7 @@ def generate_images_from_all_seeds(directories:Directories, filenames:Filenames,
     for seed_no in seeds:
         print("Generating images for seed {} of {}".format(seed_no, num_seeds))
 
-        jet_charge_data_attributes = JetChargeAttributes(directories.dataset_details.data_year, seed_no, directories.data_details.energy_gev, kappa)
+        jet_charge_data_attributes = JetChargeAttributes(directories.dataset_details.data_year, seed_no, directories.dataset_details.energy_gev, kappa)
 
         # Generate the up and down images for this seed as a numpy array of shape (num_images, num_channels, num_pixels, num_pixels)
         up_images, down_images = generate_images_from_seed(directories, filenames, jet_charge_data_attributes)
