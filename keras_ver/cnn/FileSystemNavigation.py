@@ -25,7 +25,7 @@ class Directories(object):
                     raw_data_dir:str, image_dir:str, save_dir:str,
                     data_details:DataDetails):
 
-        self.dataset_details
+        self.dataset_details = data_details
 
         # References the repository root directory
         self.repository_root_directory = repo_root_dir
