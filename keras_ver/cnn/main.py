@@ -2,10 +2,7 @@ import argparse
 import os 
 import sys 
 
-# at keras_ver/cnn/FilesystemNavigation.py
-project_root_directory = os.path.abspath(os.path.join("..", ".."))
-sys.path.append(project_root_directory)
-
+print(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 higher_directories = [os.path.abspath(os.path.join(os.path.dirname(__file__), '..')), 
                       os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
                     ]
@@ -13,7 +10,7 @@ higher_directories = [os.path.abspath(os.path.join(os.path.dirname(__file__), '.
 for directory in higher_directories:
     if directory not in sys.path: sys.path.append(directory)
 
-
+# at keras_ver/cnn/FilesystemNavigation.py
 from FilesystemNavigation import Directories, Filenames
 
 if __name__ == '__main__':
