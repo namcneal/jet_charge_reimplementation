@@ -197,7 +197,7 @@ def augment_training_data(directories:Directories):
     # The directories for the training images and labels 
     # that are created in the function 'generate_images_from_all_seeds'
     training_image_memmap_dir = directories.training_image_directory()
-    training_image_memmap_dir = directories.training_label_directory()
+    training_label_memmap_dir = directories.training_label_directory()
 
     print("Augmenting the training data.")
     # Load the existing images and labels memory-mapped files that were created
