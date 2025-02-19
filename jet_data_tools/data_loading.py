@@ -30,7 +30,19 @@ class MemmapDataset(Dataset):
         labels = mmap_ninja.np_open_existing(label_directory)
         return MemmapDataset(images, labels)
 
+    def just_images(self):
+        return JustImagesMemmapDatasets(self.images)
 
+
+class JustImagesMemmapDataset(Dataset):
+    def __init__(self, image_memmap):
+        self.images = image_memmap
+
+    def __len__(self):
+        return len(self.images)
+
+    def __getitem__(self, idx):
+        return self.images[idx]
 
 
         

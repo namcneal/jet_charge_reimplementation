@@ -1,8 +1,11 @@
-#
-# Modified from code by Katherine Fraser, Harvard, 2017, 
-# modified by Patrick Komiske, Eric Metodiev, MIT
-#
-# Contains multiple Keras models.
+higher_directories = [os.path.abspath(os.path.join(os.path.dirname(__file__), '..')), 
+                      os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
+                    ]
+# Append the higher directory to sys.path
+for directory in higher_directories:
+    if directory not in sys.path: sys.path.append(directory)
+
+##
 
 from keras.models import Sequential, Model
 from keras.layers import Dense, Dropout, Activation, Flatten, Conv2D, MaxPooling2D, Reshape, SimpleRNN, GRU, LSTM, Masking, concatenate, TimeDistributed, Input, ConvLSTM2D, LocallyConnected2D, Add
@@ -13,6 +16,9 @@ from keras import regularizers
 from .recursive import RecursiveLayer
 from .multi_K import Kappa_Layer
 from .utils import *
+
+from FileSystemNavigation import Directories, Filenames
+from roc_sic_tools import roc_curve, sic_curve
 
 class CNNSpecification(object):
     def __init__(self, 
@@ -134,19 +140,24 @@ class CNN(object):
 
         return history
 
-    def model_name(self, jet_charge_kappa,energy_gev):
-        timestamp = datetime.now().strftime("%Y-%m-%d_%H:%M")
-        return "CNN_(Energy_{}_GeV)_(Jet_charge_kappa_{})_(saved_{})".format(energy_gev, jet_charge_kappa, timestamp)
 
-    def save_model(self, model, dir):
-        filename = self.model_name() + ".keras"
+    def save_model(self, model_filename_w_format:str, save_directory:str):
+        filename = model_filename_w_format
 
         if dir[-1] != '/':
             dir += '/'
 
-        model.save(dir + filename)
+        model.save(save_directory + filename)
 
-    def evaluate_model(self, model, X_test, Y_test, batch_size):
-        ...
+    def evaluate_model(self, directories:Directories, filenames:Filenames,
+                        image_dataloader:torch.DataLoader,
+                        labels:np.ndarray):
+
+        probability_predictions = model.predict(image_dataloader)
+
+        plot_dir  = directories.save_data_directory
+        plot_name = filenames.roc_curve_filename(filenames.kappa, filenames.energy_gev)
+
+        roc_curve(probability_predictions, labels, plot_dir, plot_name)
 
 

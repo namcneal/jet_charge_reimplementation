@@ -12,10 +12,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--raw-jet-data-dir', type=str,   required=True)
-    parser.add_argument('--min_data_seed',  type=int,   required=True)
+    parser.add_argument('--min-data-seed',  type=int,   required=True)
     parser.add_argument('--max_data_seed',  type=int,   required=True)
     parser.add_argument('--data-year', type=int,   required=True)
-    parser.add_argument('--energ-gev', type=int,   required=True)
+    parser.add_argument('--energy-gev', type=int,   required=True)
     parser.add_argument('--kappa',     type=float, required=True)
     parser.add_argument('--image-dir', type=str,   required=True)
     parser.add_argument('--save-dir',  type=str,   required=True)
@@ -70,7 +70,11 @@ def main(args:argparse.Namespace):
 
     training_history = cnn_model.train_model(training_data_loader, args.val_pct, args.batch_size, args.num_epochs)
 
-    # evaluate_cnn()
+    testing_dataset = MemmapDataset.datasets_from_memmaps(directories.testing_image_directory(), directories.testing_label_directory())
+    testing_images_dataloader = testing_dataset.just_images()
+    testing_labels = testing_dataset.labels
+
+    evaluate_cnn(directories, filenames, testing_images_dataloader, testing_dataset.labels)
 
 
 
