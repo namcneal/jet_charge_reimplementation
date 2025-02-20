@@ -160,7 +160,7 @@ class CNN(object):
                 image_dataloader:DataLoader,
                 labels:np.ndarray):
 
-        probability_predictions = model.predict(image_dataloader)
+        probability_predictions = self.model.predict(image_dataloader)
 
         plot_dir  = directories.save_data_directory
         plot_name = filenames.roc_curve_filename(jet_charge_kappa, filenames.energy_gev)
