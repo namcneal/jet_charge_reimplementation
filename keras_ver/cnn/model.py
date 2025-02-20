@@ -166,7 +166,7 @@ class CNN(object):
 
         down_quark_efficiency_roc(probability_predictions, labels, plot_dir, plot_name)
 
-    def save(self, directories:Directories, filenames:Filenames)
+    def save(self, directories:Directories, filenames:Filenames):
         filename       = filenames.saved_model_filename(kappa)
         save_directory = directories.save_data_directory
         save_filepath  = os.path.join(save_directory, filename)
