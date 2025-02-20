@@ -129,7 +129,7 @@ class CNN(object):
                 jet_charge_kappa:float, 
                 training_image_label_data:DataLoader, 
                 validation_image_label_data:DataLoader,
-                batches:int, epochs:int):
+                batch_size:int, epochs:int):
 
 
         checkpoint_filename  = "checkpoint_" + filenames.saved_model_filename(jet_charge_kappa)
