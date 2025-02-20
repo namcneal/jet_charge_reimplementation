@@ -42,8 +42,9 @@ def run_one_kappa(args:argparse.Namespace, directories:Directories, jet_data_see
 
     training_dataset   = MemmapDataset.datasets_from_memmaps(directories.training_image_directory(),   directories.training_label_directory())
     validation_dataset = MemmapDataset.datasets_from_memmaps(directories.validation_image_directory(), directories.validation_label_directory())
-    training_data_loader   = DataLoader(training_dataset)
-    validation_data_loader = DataLoader(validation_dataset)
+
+    training_data_loader   = DataLoader(training_dataset,   shuffle=True, batch_size=args.batch_size)
+    validation_data_loader = DataLoader(validation_dataset, shuffle=True, batch_size=args.batch_size)
 
     cnn_specification = CNNSpecification.default()
     cnn_model         = CNN(cnn_specification)

@@ -4,6 +4,7 @@ MIN_SEED=1
 MAX_SEED=2
 DATA_YEAR=2017
 DATA_ENERGY_GEV=1000
+NUM_EPOCHS=1
 
 RAW_DATA_DIR=/n/home02/nmcneal/jet_tagging/data
 OUT_JET_IMAGE_DIR=/n/netscratch/reece_lab/Lab/noah/data_from_training_cnn
