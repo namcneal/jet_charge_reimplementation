@@ -34,7 +34,7 @@ class MemmapDataset(Dataset):
         return MemmapDataset(images, labels)
 
     def just_images(self):
-        return JustImagesMemmapDatasets(self.images)
+        return JustImagesMemmapDataset(self.images)
 
 
 class JustImagesMemmapDataset(Dataset):
