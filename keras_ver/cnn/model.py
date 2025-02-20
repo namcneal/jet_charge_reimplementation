@@ -132,7 +132,7 @@ class CNN(object):
                 batches:int, epochs:int):
 
 
-        checkpoint_filename  = "checkpoint_" + filenames.saved_model_filename(kappa)
+        checkpoint_filename  = "checkpoint_" + filenames.saved_model_filename(jet_charge_kappa)
         checkpoint_directory = directories.save_data_directory
         checkpoint_filepath  = os.path.join(checkpoint_directory, checkpoint_filename)  
 
@@ -156,18 +156,19 @@ class CNN(object):
         return history
 
     def evaluate(self, directories:Directories, filenames:Filenames,
-                        image_dataloader:DataLoader,
-                        labels:np.ndarray):
+                jet_charge_kappa:float,
+                image_dataloader:DataLoader,
+                labels:np.ndarray):
 
         probability_predictions = model.predict(image_dataloader)
 
         plot_dir  = directories.save_data_directory
-        plot_name = filenames.roc_curve_filename(filenames.kappa, filenames.energy_gev)
+        plot_name = filenames.roc_curve_filename(jet_charge_kappa, filenames.energy_gev)
 
         down_quark_efficiency_roc(probability_predictions, labels, plot_dir, plot_name)
 
-    def save(self, directories:Directories, filenames:Filenames):
-        filename       = filenames.saved_model_filename(kappa)
+    def save(self, directories:Directories, filenames:Filenames, jet_charge_kappa:float):
+        filename       = filenames.saved_model_filename(jet_charge_kappa)
         save_directory = directories.save_data_directory
         save_filepath  = os.path.join(save_directory, filename)
 

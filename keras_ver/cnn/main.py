@@ -59,9 +59,12 @@ def run_one_kappa(args:argparse.Namespace, directories:Directories, jet_data_see
     testing_images_dataloader = testing_dataset.just_images()
     testing_labels = testing_dataset.labels
 
-    cnn_model.evaluate(directories, filenames, testing_images_dataloader, testing_dataset.labels)
+    cnn_model.evaluate(directories, filenames,
+                       kappa,
+                       testing_images_dataloader, 
+                       testing_dataset.labels)
 
-    cnn_model.save(directories, filenames)
+    cnn_model.save(directories, filenames, kappa)
 
 def main(args:argparse.Namespace):
     directories = configure_system(args)
