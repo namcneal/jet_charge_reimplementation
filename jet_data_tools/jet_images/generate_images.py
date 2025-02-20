@@ -142,7 +142,16 @@ def generate_images_from_all_seeds(directories:Directories, filenames:Filenames,
         # Convert the labels to a one-hot encoding
         all_labels = torch.nn.functional.one_hot(torch.from_numpy(is_down).long(), 2).numpy()
 
-        print("\tAll jets for this seed are processed. Saving 80 pct to training and 20 pct testing.")
+        print("\tAll jets for this seed are processed. Saving 80 pct to training, 10 to validation, and 10 to testing.")
+        print("\tSaving the images and labels to memory-mapped files.")
+        print("\tTraining, validation, and testing images and labels are saved in the following directories:")
+        print("\t\tTraining images: ", directories.training_image_directory())
+        print("\t\tTraining labels: ", directories.training_label_directory())
+        print("\t\tValidation images: ", directories.validation_image_directory())
+        print("\t\tValidation labels: ", directories.validation_label_directory())
+        print("\t\tTesting images: ", directories.testing_image_directory())
+        print("\t\tTesting labels: ", directories.testing_label_directory())
+
 
         # Compute the number of samples that will go into each of the training, validation, and testing sets
         # The training-testing split is 80-20
