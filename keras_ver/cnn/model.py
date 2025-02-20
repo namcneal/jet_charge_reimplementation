@@ -148,7 +148,7 @@ class CNN(object):
             validation_data   = validation_image_label_data,
             batch_size        = batch_size, 
             epochs            = epochs, 
-            callbacks         = [model_checkpoint_callback]
+            callbacks         = [model_checkpoint_callback],
             verbose           = 1,
             shuffle           = True,
         )
