@@ -85,7 +85,7 @@ class CNNSpecification(object):
 class CNN(object):
     def __init__(self, specification:CNNSpecification):
         self.specification = specification
-        self.model = CNN.create_model(self.specification)
+        self.model = CNN.create_model(self.specification)        
 
     @staticmethod
     def create_model(specification:CNNSpecification, comp=True, summary=True):
@@ -125,28 +125,37 @@ class CNN(object):
 
         return model
 
-    def train_model(self, training_image_label_data:DataLoader, validation_image_label_data:DataLoader, batch_size, epochs):
+    def train(self, directories:Directories, filenames:Filenames, 
+                jet_charge_kappa:float, 
+                training_image_label_data:DataLoader, 
+                alidation_image_label_data:DataLoader,
+                batches:int, epochs:int):
+
+
+        checkpoint_filename  = "checkpoint_" + filenames.saved_model_filename(kappa)
+        checkpoint_directory = directories.save_data_directory
+        checkpoint_filepath  = os.path.join(checkpoint_directory, checkpoint_filename)  
+
+        model_checkpoint_callback = keras.callbacks.ModelCheckpoint(
+            filepath=checkpoint_filepath,
+            save_freq="epoch",
+            monitor='val_loss',
+            mode='max',
+            save_best_only=True)
+        
         history = self.model.fit(
             x                 = training_image_label_data,
             validation_data   = validation_image_label_data,
             batch_size        = batch_size, 
             epochs            = epochs, 
+            callbacks         = [model_checkpoint_callback]
             verbose           = 1,
             shuffle           = True,
         )
 
         return history
 
-
-    def save_model(self, model_filename_w_format:str, save_directory:str):
-        filename = model_filename_w_format
-
-        if dir[-1] != '/':
-            dir += '/'
-
-        model.save(save_directory + filename)
-
-    def evaluate_model(self, directories:Directories, filenames:Filenames,
+    def evaluate(self, directories:Directories, filenames:Filenames,
                         image_dataloader:DataLoader,
                         labels:np.ndarray):
 
@@ -156,5 +165,12 @@ class CNN(object):
         plot_name = filenames.roc_curve_filename(filenames.kappa, filenames.energy_gev)
 
         down_quark_efficiency_roc(probability_predictions, labels, plot_dir, plot_name)
+
+    def save(self, directories:Directories, filenames:Filenames)
+        filename       = filenames.saved_model_filename(kappa)
+        save_directory = directories.save_data_directory
+        save_filepath  = os.path.join(save_directory, filename)
+
+        model.save(save_filepath)
 
 
