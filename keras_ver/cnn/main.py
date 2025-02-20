@@ -81,8 +81,8 @@ if __name__ == '__main__':
     parser.add_argument('--energy-gev', type=int,   required=True)
     parser.add_argument('--image-dir', type=str,   required=True)
     parser.add_argument('--save-dir',  type=str,   required=True)
-    parser.add_argument('--batch_size', type=int,   default=512)
-    parser.add_argument('--num_epochs', type=int,   default=35)
+    parser.add_argument('--batch-size', type=int,   default=512)
+    parser.add_argument('--num-epochs', type=int,   default=35)
 
     main(parser.parse_args())
 
