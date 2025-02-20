@@ -78,15 +78,16 @@ def main(args:argparse.Namespace):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--raw-jet-data-dir', type=str,   required=True)
+    parser.add_argument('--raw-jet-data-dir', type=str, required=True)
     parser.add_argument('--min-data-seed',  type=int,   required=True)
     parser.add_argument('--max-data-seed',  type=int,   required=True)
-    parser.add_argument('--data-year', type=int,   required=True)
-    parser.add_argument('--energy-gev', type=int,   required=True)
-    parser.add_argument('--image-dir', type=str,   required=True)
-    parser.add_argument('--save-dir',  type=str,   required=True)
-    parser.add_argument('--batch-size', type=int,   default=512)
-    parser.add_argument('--num-epochs', type=int,   default=35)
+    parser.add_argument('--data-year',      type=int,   required=True)
+    parser.add_argument('--energy-gev',     type=int,   required=True)
+    parser.add_argument('--image-dir',      type=str,   required=True)
+    parser.add_argument('--regen-images',   type=bool,  default=False)
+    parser.add_argument('--save-dir',       type=str,   required=True)
+    parser.add_argument('--batch-size',     type=int,   default=512)
+    parser.add_argument('--num-epochs',      type=int,  default=35)
 
     main(parser.parse_args())
 

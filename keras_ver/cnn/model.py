@@ -128,7 +128,7 @@ class CNN(object):
     def train(self, directories:Directories, filenames:Filenames, 
                 jet_charge_kappa:float, 
                 training_image_label_data:DataLoader, 
-                alidation_image_label_data:DataLoader,
+                validation_image_label_data:DataLoader,
                 batches:int, epochs:int):
 
 
