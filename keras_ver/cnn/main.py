@@ -56,8 +56,13 @@ def run_one_kappa(args:argparse.Namespace, directories:Directories, jet_data_see
                                         args.batch_size, args.num_epochs)
 
     testing_dataset = MemmapDataset.datasets_from_memmaps(directories.testing_image_directory(), directories.testing_label_directory())
-    testing_images_dataloader = DataLoader(testing_dataset.just_images())
-    testing_labels = testing_dataset.labels
+    
+    # MUST be batched for the Keras usage of the DataLoader in the model.predict method
+    # Otherwise, 'get_tensor_spec' in 'keras/src/trainers/data_adapters/torch_data_loader_adapter.py' will throw an error. 
+    # It expects a list of batches, otherwise we get  "TypeError: 'TensorSpec' object is not iterable"
+    testing_batch_size        = args.batch_size
+    testing_images_dataloader = DataLoader(testing_dataset.just_images(), batch_size=testing_batch_size)
+    testing_labels            = testing_dataset.labels
 
     cnn_model.evaluate(directories, filenames,
                        kappa,
