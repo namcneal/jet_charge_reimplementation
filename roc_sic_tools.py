@@ -21,7 +21,7 @@ def down_quark_efficiency_roc(probability_is_down_quark:np.ndarray,
         num_down_quarks = np.sum(down_quark_truth_labels)
         num_up_quarks   = np.sum(up_quark_labels)
 
-        print("Arrays: ", down_quark_labels, up_quark_labels)
+        print("Arrays: ", up_quark_labels)
         print("Down quarks: ", num_down_quarks)
         print("Up quarks: ", num_up_quarks)        
         try:
