@@ -20,7 +20,15 @@ def down_quark_efficiency_roc(probability_is_down_quark:np.ndarray,
         up_quark_labels = 1 - down_quark_truth_labels
         num_down_quarks = np.sum(down_quark_truth_labels)
         num_up_quarks   = np.sum(up_quark_labels)
-        assert num_down_quarks + num_up_quarks == np.shape(down_quark_truth_labels)[0]
+        
+        try:
+            assert num_down_quarks + num_up_quarks == np.shape(down_quark_truth_labels)[0]
+        except AssertionError:
+            print("Down quark and up quark labels do not sum to the total number of labels.")
+            print("Down quark labels: ", num_down_quarks)
+            print("Up quark labels: ", num_up_quarks)
+            print("Total labels: ", np.shape(down_quark_truth_labels)[0])
+            return
 
         predictions_is_down = probability_is_down_quark > threshold
         predictions_is_up   = probability_is_down_quark <= threshold
