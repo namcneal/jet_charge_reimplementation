@@ -1,4 +1,5 @@
 import numpy as np
+import scipy as sp
 import matplotlib.pyplot as plt
 import os
 
@@ -11,6 +12,10 @@ def down_quark_efficiency_roc(probability_is_down_quark:np.ndarray,
                               down_quark_truth_labels:np.ndarray,
                               plot_output_dir:str, 
                               plot_output_filename:str,):
+    # The labels should be just for the down quarks specifically
+    # Check to make sure the passed array is just one dimensional
+    if len(np.shape(down_quark_truth_labels)) > 1:
+        raise ValueError("Down quark truth labels are not one dimensional.")
 
     thresholds  = np.linspace(0, 1, 500)
     down_quark_efficiencies = np.empty(len(thresholds))
@@ -47,7 +52,7 @@ def down_quark_efficiency_roc(probability_is_down_quark:np.ndarray,
     down_quark_efficiencies = down_quark_efficiencies[increasing_down_quark_efficiencies]
     up_quark_efficiencies   = up_quark_efficiencies[increasing_down_quark_efficiencies]
     
-    auc = sci.integrate.simpson(up_quark_efficiencies, x=down_quark_efficiencies)
+    auc = sp.integrate.simpson(up_quark_efficiencies, x=down_quark_efficiencies)
 
     plt.plot(down_quark_efficiencies, up_quark_efficiencies, color='navy', lw=2)    
     plt.fill_between(down_quark_efficiencies, up_quark_efficiencies, color='navy', alpha=0.2)
