@@ -166,7 +166,7 @@ class CNN(object):
             predicted_probability_is_down_quark[i*len(batch):(i+1)*len(batch)] = self.model.predict(batch_as_array)[:,1]
         
         plot_dir  = directories.save_data_directory
-        plot_name = filenames.roc_curve_filename(jet_charge_kappa, filenames.energy_gev)
+        plot_name = filenames.roc_curve_filename(jet_charge_kappa, filenames.data_details.energy_gev)
 
         down_quark_efficiency_roc(predicted_probability_is_down_quark, labels, plot_dir, plot_name)
 
