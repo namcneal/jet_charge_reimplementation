@@ -44,21 +44,21 @@ class Directories(object):
         self.save_data_directory = save_dir
 
     def training_directory(self):
-        return os.path.join(self.save_data_directory, str(self.dataset_details), "training")
+        return os.path.join(self.image_directory, str(self.dataset_details), "training")
     def training_image_directory(self):
         return os.path.join(self.training_directory(), "images")
     def training_label_directory(self):
         return os.path.join(self.training_directory(), "labels")
 
     def validation_directory(self):
-        return os.path.join(self.save_data_directory, str(self.dataset_details), "validation")
+        return os.path.join(self.image_directory, str(self.dataset_details), "validation")
     def validation_image_directory(self):
         return os.path.join(self.validation_directory(), "images")
     def validation_label_directory(self):
         return os.path.join(self.validation_directory(), "labels")
 
     def testing_directory(self):
-        return os.path.join(self.raw_data_directory, str(self.dataset_details),  "testing")
+        return os.path.join(self.image_directory, str(self.dataset_details),  "testing")
     def testing_image_directory(self):
         return os.path.join(self.testing_directory(), "images")
     def testing_label_directory(self):
