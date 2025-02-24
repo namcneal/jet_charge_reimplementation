@@ -20,7 +20,10 @@ def down_quark_efficiency_roc(probability_is_down_quark:np.ndarray,
         up_quark_labels = 1 - down_quark_truth_labels
         num_down_quarks = np.sum(down_quark_truth_labels)
         num_up_quarks   = np.sum(up_quark_labels)
-        
+
+        print("Arrays: ", down_quark_labels, up_quark_labels)
+        print("Down quarks: ", num_down_quarks)
+        print("Up quarks: ", num_up_quarks)        
         try:
             assert num_down_quarks + num_up_quarks == np.shape(down_quark_truth_labels)[0]
         except AssertionError:
