@@ -133,7 +133,7 @@ class CNN(object):
 
 
         checkpoint_filename  = "checkpoint_" + filenames.saved_model_filename(jet_charge_kappa)
-        checkpoint_directory = directories.save_data_directory
+        checkpoint_directory = directories.save_dir_for_kappa(jet_charge_kappa)
         checkpoint_filepath  = os.path.join(checkpoint_directory, checkpoint_filename)  
 
         model_checkpoint_callback = keras.callbacks.ModelCheckpoint(
@@ -165,18 +165,18 @@ class CNN(object):
             batch_as_array = np.array(batch)
             predicted_probability_is_down_quark[i*len(batch):(i+1)*len(batch)] = self.model.predict(batch_as_array)[:,1]
         
-        plot_dir  = directories.save_data_directory
+        plot_dir  = directories.save_dir_for_kappa(jet_charge_kappa)
         plot_name = filenames.roc_curve_filename(jet_charge_kappa)
 
         just_down_quark_labels = labels[:,1]
         down_quark_efficiency_roc(filenames.data_details.energy_gev, filenames.data_details.data_year,
-                                jet_charge_kappa,
-                                predicted_probability_is_down_quark, 
-                                just_down_quark_labels, plot_dir, plot_name)
+                                    jet_charge_kappa,
+                                    predicted_probability_is_down_quark, 
+                                    just_down_quark_labels, plot_dir, plot_name)
 
     def save(self, directories:Directories, filenames:Filenames, jet_charge_kappa:float):
         filename       = filenames.saved_model_filename(jet_charge_kappa)
-        save_directory = directories.save_data_directory
+        save_directory = directories.save_dir_for_kappa(jet_charge_kappa)
         save_filepath  = os.path.join(save_directory, filename)
 
         self.model.save(save_filepath)

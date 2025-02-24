@@ -43,6 +43,9 @@ class Directories(object):
         self.image_directory     = image_dir
         self.save_data_directory = save_dir
 
+    def save_dir_for_kappa(self, kappa:float):
+        return os.path.join(self.save_data_directory, "kappa_{}".format(kappa))
+
     def training_directory(self):
         return os.path.join(self.image_directory, str(self.dataset_details), "training")
     def training_image_directory(self):
