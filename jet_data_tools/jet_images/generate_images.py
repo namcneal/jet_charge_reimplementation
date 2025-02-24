@@ -84,6 +84,7 @@ def combine_up_down_images_create_labels(up_images:np.array, down_images:np.arra
     if all_images.dtype != np.float32:
         all_images = all_images.astype(np.float32)
 
+    # The labels are 0 for up and 1 for down
     is_down = np.concatenate([np.zeros(num_up), np.ones(num_down)])
 
     # Interleaf the up and down images
@@ -91,7 +92,6 @@ def combine_up_down_images_create_labels(up_images:np.array, down_images:np.arra
     interleafed_idx[::2]  = range(num_up)
     interleafed_idx[1::2] = range(num_up, num_up + num_down)
     
-
     all_images = all_images[interleafed_idx,:,:,:]
     is_down    = is_down[interleafed_idx]
 
