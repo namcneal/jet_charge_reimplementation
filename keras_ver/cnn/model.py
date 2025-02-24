@@ -175,6 +175,6 @@ class CNN(object):
         save_directory = directories.save_data_directory
         save_filepath  = os.path.join(save_directory, filename)
 
-        model.save(save_filepath)
+        self.model.save(save_filepath)
 
 
