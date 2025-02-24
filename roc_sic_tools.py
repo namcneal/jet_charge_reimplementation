@@ -8,10 +8,11 @@ def down_quark_sic_curves(model_dir:str, model_filename:str,
                         kappa:float=0.2):
     pass 
 
-def down_quark_efficiency_roc(probability_is_down_quark:np.ndarray,
-                              down_quark_truth_labels:np.ndarray,
-                              plot_output_dir:str, 
-                              plot_output_filename:str,):
+def down_quark_efficiency_roc(data_year:int, energy_gev:float, kappa:float,
+                                probability_is_down_quark:np.ndarray,
+                                down_quark_truth_labels:np.ndarray,
+                                plot_output_dir:str, 
+                                plot_output_filename:str,):
     # The labels should be just for the down quarks specifically
     # Check to make sure the passed array is just one dimensional
     if len(np.shape(down_quark_truth_labels)) > 1:
@@ -63,7 +64,7 @@ def down_quark_efficiency_roc(probability_is_down_quark:np.ndarray,
     plt.yticks(np.linspace(0,1,11))
     plt.ylabel("Up Quark (Background) Rejection")
     plt.xlabel("Down Quark (Signal) Acceptance")
-    plt.title(r"ROC curve for {} GeV Jets (2017 Data) at $\kappa$={}".format(energy_gev, kappa))
+    plt.title(r"ROC curve for {} GeV Jets ({} Data) at $\kappa$={}".format(data_year, energy_gev, kappa))
 
     if plot_output_dir[-1] != '/':
         plot_output_dir += '/'
