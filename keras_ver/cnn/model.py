@@ -171,8 +171,8 @@ class CNN(object):
         just_down_quark_labels = labels[:,1]
         down_quark_efficiency_roc(filenames.data_details.energy_gev, filenames.data_details.data_year,
                                     jet_charge_kappa,
-                                    predicted_probability_is_down_quark, 
-                                    just_down_quark_labels, plot_dir, plot_name)
+                                    predicted_probability_is_down_quark, just_down_quark_labels, 
+                                    plot_dir, plot_name)
 
     def save(self, directories:Directories, filenames:Filenames, jet_charge_kappa:float):
         filename       = filenames.saved_model_filename(jet_charge_kappa)

@@ -68,5 +68,5 @@ def down_quark_efficiency_roc(data_year:int, energy_gev:float, kappa:float,
     fig_filepath = os.path.join(plot_output_dir, plot_output_filename)
 
     plt.savefig(fig_filepath)
-    plt.show()
+    plt.clf()
 
