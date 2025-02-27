@@ -52,6 +52,7 @@ def down_quark_efficiency_roc(data_year:int, energy_gev:float, kappa:float,
     
     auc = sp.integrate.simpson(up_quark_efficiencies, x=down_quark_efficiencies)
 
+    plt.clf()
     plt.plot(down_quark_efficiencies, up_quark_efficiencies, color='navy', lw=2)    
     plt.fill_between(down_quark_efficiencies, up_quark_efficiencies, color='navy', alpha=0.2)
     plt.text(0.6, 0.1, "AUC: {:.3f}".format(auc), fontsize=12)
@@ -69,4 +70,5 @@ def down_quark_efficiency_roc(data_year:int, energy_gev:float, kappa:float,
 
     plt.savefig(fig_filepath)
     plt.clf()
+    plt.close()
 
