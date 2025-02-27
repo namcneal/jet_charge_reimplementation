@@ -14,6 +14,9 @@ for directory in higher_directories:
 ##
 from JetImages import PreprocessingSpecification
 
+def two_channel_preprocessing_str(channel_one:PreprocessingSpecification, channel_two:PreprocessingSpecification):
+    return "channel_one_{}_channel_two_{}".format(channel_one, channel_two)
+
 class DataDetails(object):
     def __init__(self, data_year:int, energy_gev:int):
         self.data_year  = data_year
@@ -47,31 +50,38 @@ class Directories(object):
     def save_dir_for_kappa(self, kappa:float):
         return os.path.join(self.save_data_directory, "kappa_{}".format(kappa))
 
-    def training_directory(self):
-        return os.path.join(self.image_directory, str(self.dataset_details), "training")
-    def training_image_directory(self):
-        return os.path.join(self.training_directory(), "images")
-    def training_label_directory(self):
-        return os.path.join(self.training_directory(), "labels")
+    def output_data_super_directory(self, dataset_type:str,
+                                    kappa:float, 
+                                    channel_one:PreprocessingSpecification, 
+                                    channel_two:PreprocessingSpecification):
+                                    
+        if dataset_type not in ["training", "validation", "testing"]:
+            raise ValueError("dataset_type must be one of 'training', 'validation', 'testing'")
 
-    def validation_directory(self):
-        return os.path.join(self.image_directory, str(self.dataset_details), "validation")
-    def validation_image_directory(self):
-        return os.path.join(self.validation_directory(), "images")
-    def validation_label_directory(self):
-        return os.path.join(self.validation_directory(), "labels")
+        return os.path.join(self.image_directory, str(self.dataset_details), dataset_type)
 
-    def testing_directory(self):
-        return os.path.join(self.image_directory, str(self.dataset_details),  "testing")
-    def testing_image_directory(self):
-        return os.path.join(self.testing_directory(), "images")
-    def testing_label_directory(self):
-        return os.path.join(self.testing_directory(), "labels")
+    def output_image_directory(self, dataset_type:str, 
+                                kappa:float,
+                                channel_one:PreprocessingSpecification,
+                                channel_two:PreprocessingSpecification):
+        super_dir = self.output_data_super_directory(dataset_type, kappa, channel_one, channel_two)
+        return os.path.join(super_dir, "images")
 
-    def all_output_data_directories(self):
-        return [self.training_directory(),   self.training_image_directory(),   self.training_label_directory(),
-                self.validation_directory(), self.validation_image_directory(), self.validation_label_directory(),
-                self.testing_directory(),    self.testing_image_directory(),    self.testing_label_directory()]
+    def output_label_directory(self, dataset_type:str,
+                                kappa:float,
+                                channel_one:PreprocessingSpecification,
+                                channel_two:PreprocessingSpecification):
+
+        super_dir = self.output_data_super_directory(dataset_type, kappa, channel_one, channel_two)
+        return os.path.join(super_dir, "labels")
+
+    def all_output_data_directories(self, kappa:float, 
+                                    channel_one:PreprocessingSpecification, 
+                                    channel_two:PreprocessingSpecification):
+
+        for dataset_type in ["training", "validation", "testing"]:
+            yield (self.output_image_directory(dataset_type, kappa, channel_one, channel_two),
+                   self.output_label_directory(dataset_type, kappa, channel_one, channel_two))
 
 class Filenames(object):
     def __init__(self, data_details:DataDetails):
@@ -80,8 +90,7 @@ class Filenames(object):
     def data_details_str(self):
         return dataset_details_str(self.data_details)
 
-    def two_channel_preprocessing_str(self, channel_one:PreprocessingSpecification, channel_two:PreprocessingSpecification):
-        return "channel_one_{}_channel_two_{}".format(channel_one, channel_two)
+
 
     def model_result_filename_template(self, kappa:float, 
                                 channel_one:PreprocessingSpecification, 

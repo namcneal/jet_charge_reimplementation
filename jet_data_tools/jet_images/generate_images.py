@@ -53,7 +53,8 @@ def generate_and_save_all_images(directories:Directories, filenames:Filenames,
 def generate_jet_image_memmaps(directories:Directories, filenames:Filenames, 
                                 seeds:range, kappa:float,
                                 channel_one_preprocessing_specification:PreprocessingSpecification,
-                                channel_two_preprocessing_specification:PreprocessingSpecification): 
+                                channel_two_preprocessing_specification:PreprocessingSpecification,
+                                overwrite_existing=False): 
 
     # Generate the training, validation, and testing images and labels for all seeds
     # These are saved as memory-mapped files in the output_data_root_dir
@@ -63,27 +64,41 @@ def generate_jet_image_memmaps(directories:Directories, filenames:Filenames,
                                     channel_two_preprocessing_specification)
 
     # Take the training images and labels and augment them to create more training data
-    augment_training_data(directories)
+    augment_training_data(directories, kappa, 
+                          channel_one_preprocessing_specification,
+                          channel_two_preprocessing_specification)
 
     # Verify that all the memory-mapped files can be accessed 
-    verify_all_memmaps(directories)
+    verify_all_memmaps(directories, kappa, 
+                       channel_one_preprocessing_specification,
+                       channel_two_preprocessing_specification)
 
 
 def generate_images_from_all_seeds(directories:Directories, filenames:Filenames, 
                                     seeds:range, kappa:float,
                                     channel_one_preprocessing_specification:PreprocessingSpecification,
-                                    channel_two_preprocessing_specification:PreprocessingSpecification):
+                                    channel_two_preprocessing_specification:PreprocessingSpecification,
+                                    overwrite_existing=False):
+
     # Multiplied by two for up and down
     total_num_images_per_seed = 2 * JetsFromFile.JET_EVENTS_PER_FILE
 
     # In each of the three directories, create two subdirectories for the images and labels
-    train_val_test_image_dirs = [directories.training_image_directory(), directories.validation_image_directory(), directories.testing_image_directory()]
-    train_val_test_label_dirs = [directories.training_label_directory(), directories.validation_label_directory(), directories.testing_label_directory()]
+    directory_name_params = [kappa, channel_one_preprocessing_specification, channel_two_preprocessing_specification]
+    train_val_test_images_dirs = [directories.output_image_directory(dataset_type, *directory_name_params) for dataset_type in ["training", "validation", "testing"]]
+    train_val_test_label_dirs  = [directories.output_label_directory(dataset_type, *directory_name_params) for dataset_type in ["training", "validation", "testing"]]
 
+    all_directories_exist = True
     for dir in train_val_test_image_dirs + train_val_test_label_dirs:
         if not os.path.exists(dir):
+            all_directories_exist = False
             print("Creating directory: ", dir)
             os.makedirs(dir)
+    
+    # If all of the directories already exist and we don't want to overwrite, exit now
+    if all_directories_exist and not overwrite_existing:
+        print("All image and label directories already exist and no overwriting has been chosen. Exiting")
+        return
 
     # These will be the memmap files for all the images and labels, for every seed combined.
     # There are two for each of the training, validation, and testing data, so six in total.
@@ -120,12 +135,9 @@ def generate_images_from_all_seeds(directories:Directories, filenames:Filenames,
         print("\tAll jets for this seed are processed. Saving 80 pct to training, 10 to validation, and 10 to testing.")
         print("\tSaving the images and labels to memory-mapped files.")
         print("\tTraining, validation, and testing images and labels are saved in the following directories:")
-        print("\t\tTraining images: ", directories.training_image_directory())
-        print("\t\tTraining labels: ", directories.training_label_directory())
-        print("\t\tValidation images: ", directories.validation_image_directory())
-        print("\t\tValidation labels: ", directories.validation_label_directory())
-        print("\t\tTesting images: ", directories.testing_image_directory())
-        print("\t\tTesting labels: ", directories.testing_label_directory())
+        for (idx, dataset_type)in enumerate(["training", "validation", "testing"]):
+            print("\t\t{} images: {}".format(dataset_type.capitalize(), train_val_test_image_dirs[idx]))
+            print("\t\t{} labels: {}".format(dataset_type.capitalize(), train_val_test_label_dirs[idx]))
 
 
         # Compute the number of samples that will go into each of the training, validation, and testing sets
@@ -220,7 +232,9 @@ def combine_up_down_images_create_labels(up_images:np.array, down_images:np.arra
 
     return all_images, is_down
 
-def augment_training_data(directories:Directories):
+def augment_training_data(directories:Directories, kappa:float,
+                        channel_one_preprocessing_specification:PreprocessingSpecification,
+                        channel_two_preprocessing_specification:PreprocessingSpecification):
 
     # The directories for the training images and labels 
     # that are created in the function 'generate_images_from_all_seeds'
@@ -261,12 +275,10 @@ def verify_all_memmap_elements(memmap_dir:str):
 
     print("All elements in the memmap at {} are accessible.".format(memmap_dir))
 
-def verify_all_memmaps(directories:Directories):
-    for dir in [directories.training_image_directory(), 
-                directories.training_label_directory(), 
-                directories.validation_image_directory(),
-                directories.validation_label_directory(),
-                directories.testing_image_directory(), 
-                directories.testing_label_directory()]:
+def verify_all_memmaps(directories:Directories, kappa:float,
+                        channel_one_preprocessing_specification:PreprocessingSpecification,
+                        channel_two_preprocessing_specification:PreprocessingSpecification):
                 
-        verify_all_memmap_elements( dir )
+    for (image_dir, label_dir) in directories.all_output_data_directories(kappa, channel_one_preprocessing_specification, channel_two_preprocessing_specification):
+        verify_all_memmap_elements(image_dir)
+        verify_all_memmap_elements(label_dir) 
