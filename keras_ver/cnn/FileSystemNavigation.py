@@ -108,7 +108,7 @@ class Filenames(object):
 
         return without_file_format
 
-    def saved_model_filename(self, kappa:float,,
+    def saved_model_filename(self, kappa:float,
                              channel_one:PreprocessingSpecification, 
                              channel_two:PreprocessingSpecification):
 
