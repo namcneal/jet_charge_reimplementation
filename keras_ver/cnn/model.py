@@ -15,6 +15,7 @@ import keras
 from keras.models import Sequential, Model
 from keras.layers import Dense, Dropout, Activation, Flatten, Conv2D, MaxPooling2D
 
+from JetImages import PreprocessingSpecification
 from FileSystemNavigation import Directories, Filenames, DataDetails
 from roc_sic_tools import down_quark_efficiency_roc
 
@@ -36,6 +37,7 @@ class CNNSpecification(object):
                     num_final_dense_logits, 
                     final_dense_logits_activation, 
 
+                    stopping_patience,
                     loss, 
                     opt,):
 
@@ -56,6 +58,7 @@ class CNNSpecification(object):
         self.num_final_dense_logits        = num_final_dense_logits
         self.final_dense_logits_activation = final_dense_logits_activation
 
+        self.stopping_patience = stopping_patience
         self.loss = loss
         self.opt = opt
 
@@ -73,11 +76,12 @@ class CNNSpecification(object):
 
             intermediate_dense_size=64,
             intermediate_dense_dropout=0.35,
-            intermediate_dense_activation='silu',
+            intermediate_dense_activation='relu',
 
             num_final_dense_logits=2,
             final_dense_logits_activation='softmax',
 
+            stopping_patience=5,
             loss='categorical_crossentropy',
             opt=keras.optimizers.Adam(learning_rate=0.001, weight_decay=0.0),
         )
@@ -136,12 +140,20 @@ class CNN(object):
         checkpoint_directory = directories.save_dir_for_kappa(jet_charge_kappa)
         checkpoint_filepath  = os.path.join(checkpoint_directory, checkpoint_filename)  
 
+        early_stopping_callback = keras.callbacks.EarlyStopping(
+            monitor="val_loss",
+            min_delta=0,
+            patience=self.specification.stopping_patience,
+            mode="auto",
+        )
+
         model_checkpoint_callback = keras.callbacks.ModelCheckpoint(
             filepath=checkpoint_filepath,
             save_freq="epoch",
             monitor='val_loss',
             mode='max',
-            save_best_only=True)
+            save_best_only=True
+        )
         
         history = self.model.fit(
             x                 = training_image_label_data,
@@ -157,6 +169,8 @@ class CNN(object):
 
     def evaluate(self, directories:Directories, filenames:Filenames,
                 jet_charge_kappa:float,
+                channel_one_preprocessing_specification:PreprocessingSpecification,
+                channel_two_preprocessing_specification:PreprocessingSpecification,
                 image_dataloader:DataLoader,
                 labels:np.ndarray):
 
@@ -166,16 +180,23 @@ class CNN(object):
             predicted_probability_is_down_quark[i*len(batch):(i+1)*len(batch)] = self.model.predict(batch_as_array)[:,1]
         
         plot_dir  = directories.save_dir_for_kappa(jet_charge_kappa)
-        plot_name = filenames.roc_curve_filename(jet_charge_kappa)
 
+        specs     = [channel_one_preprocessing_specification, channel_two_preprocessing_specification]
+        plot_name = filenames.roc_curve_filename(jet_charge_kappa, *specs)
+        
         just_down_quark_labels = labels[:,1]
         down_quark_efficiency_roc(filenames.data_details.energy_gev, filenames.data_details.data_year,
                                     jet_charge_kappa,
                                     predicted_probability_is_down_quark, just_down_quark_labels, 
                                     plot_dir, plot_name)
 
-    def save(self, directories:Directories, filenames:Filenames, jet_charge_kappa:float):
-        filename       = filenames.saved_model_filename(jet_charge_kappa)
+    def save(self, directories:Directories, filenames:Filenames, 
+             jet_charge_kappa:float,
+             channel_one_preprocessing_specification:PreprocessingSpecification,
+             channel_two_preprocessing_specification:PreprocessingSpecification):
+        
+        specs = [channel_one_preprocessing_specification, channel_two_preprocessing_specification]
+        filename       = filenames.saved_model_filename(jet_charge_kappa, *specs)
         save_directory = directories.save_dir_for_kappa(jet_charge_kappa)
         save_filepath  = os.path.join(save_directory, filename)
 

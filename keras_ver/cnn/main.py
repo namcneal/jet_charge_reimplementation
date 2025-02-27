@@ -31,51 +31,59 @@ def configure_system(args:argparse.Namespace):
 
     return directories
     
-def run_one_kappa(args:argparse.Namespace, directories:Directories, jet_data_seeds:range, kappa:float,):
+def run_one_kappa(args:argparse.Namespace, directories:Directories, 
+                  jet_data_seeds:range, kappa:float,
+                  ):
+    from JetImages       import PreprocessingSpecification
     from generate_images import JetChargeAttributes, generate_and_save_all_images
     from data_loading    import MemmapDataset
     from model import CNNSpecification, CNN
     
     filenames = Filenames(directories.dataset_details)
 
-    generate_and_save_all_images(directories, filenames, jet_data_seeds, kappa)
-
-    training_dataset   = MemmapDataset.datasets_from_memmaps(directories.training_image_directory(),   directories.training_label_directory())
-    validation_dataset = MemmapDataset.datasets_from_memmaps(directories.validation_image_directory(), directories.validation_label_directory())
-
-    training_data_loader   = DataLoader(training_dataset,   shuffle=True, batch_size=args.batch_size)
-    validation_data_loader = DataLoader(validation_dataset, shuffle=True, batch_size=args.batch_size)
-
-    cnn_specification = CNNSpecification.default()
-    cnn_model         = CNN(cnn_specification)
-
-    training_history = cnn_model.train(directories, filenames, 
-                                        kappa,
-                                        training_data_loader,
-                                        validation_data_loader,
-                                        args.batch_size, args.num_epochs)
-
-    testing_dataset = MemmapDataset.datasets_from_memmaps(directories.testing_image_directory(), directories.testing_label_directory())
+    # preprocessing_specification = PreprocessingSpecification(use_L1_normalization=True, use_zero_centering=True, use_standardization=True)
     
-    # MUST be batched for the Keras usage of the DataLoader in the model.predict method
-    # Otherwise, 'get_tensor_spec' in 'keras/src/trainers/data_adapters/torch_data_loader_adapter.py' will throw an error. 
-    # It expects a list of batches, otherwise we get  "TypeError: 'TensorSpec' object is not iterable"
-    testing_batch_size        = args.batch_size
-    testing_images_dataloader = DataLoader(testing_dataset.just_images(), batch_size=testing_batch_size)
-    testing_labels            = testing_dataset.labels
+    all_preprocessing_combinations = PreprocessingSpecification.generate_all_combinations()
+    for (channel_one_spec, channel_two_spec) in itertools.product(all_preprocessing_combinations, repeat=2):
 
-    cnn_model.evaluate(directories, filenames,
-                       kappa,
-                       testing_images_dataloader, 
-                       testing_dataset.labels)
+        generate_and_save_all_images(directories, filenames, 
+                                     jet_data_seeds, kappa,
+                                     channel_one_spec, channel_two_spec)
 
-    cnn_model.save(directories, filenames, kappa)
+        training_dataset   = MemmapDataset.datasets_from_memmaps(directories.training_image_directory(),   directories.training_label_directory())
+        validation_dataset = MemmapDataset.datasets_from_memmaps(directories.validation_image_directory(), directories.validation_label_directory())
+
+        training_data_loader   = DataLoader(training_dataset,   shuffle=True, batch_size=args.batch_size)
+        validation_data_loader = DataLoader(validation_dataset, shuffle=True, batch_size=args.batch_size)
+
+        cnn_specification = CNNSpecification.default()
+        cnn_model         = CNN(cnn_specification)
+
+        training_history = cnn_model.train(directories, filenames, 
+                                            kappa,
+                                            training_data_loader,
+                                            validation_data_loader,
+                                            args.batch_size, args.num_epochs)
+
+        testing_dataset = MemmapDataset.datasets_from_memmaps(directories.testing_image_directory(), directories.testing_label_directory())
+        
+        testing_batch_size        = args.batch_size
+        testing_images_dataloader = DataLoader(testing_dataset.just_images(), batch_size=testing_batch_size)
+        testing_labels            = testing_dataset.labels
+
+        cnn_model.evaluate(directories, filenames,
+                            kappa,
+                            channel_one_spec, channel_two_spec,
+                            testing_images_dataloader, 
+                            testing_dataset.labels)
+
+        cnn_model.save(directories, filenames, kappa)
 
 def main(args:argparse.Namespace):
     directories = configure_system(args)
 
     all_jet_data_seeds = range(args.min_data_seed, args.max_data_seed + 1)
-    all_kappas = [0.1, 0.2, 0.3]
+    all_kappas = [0.2, 0.3]
 
     # all_kappas = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7]
 

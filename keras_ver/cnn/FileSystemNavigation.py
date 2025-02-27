@@ -12,6 +12,7 @@ for directory in higher_directories:
     if directory not in sys.path: sys.path.append(directory)
 
 ##
+from JetImages import PreprocessingSpecification
 
 class DataDetails(object):
     def __init__(self, data_year:int, energy_gev:int):
@@ -19,7 +20,7 @@ class DataDetails(object):
         self.energy_gev = energy_gev
 
     def __str__(self):
-        return "_(year_{})_(energy_{}_gev)_".format(self.data_year, self.energy_gev)
+        return "(year_{})_(energy_{}_gev)_".format(self.data_year, self.energy_gev)
 
 class Directories(object):
     def __init__(self, repo_root_dir:str, 
@@ -79,23 +80,33 @@ class Filenames(object):
     def data_details_str(self):
         return dataset_details_str(self.data_details)
 
-    def saved_model_filename(self, kappa:float):
-        timestamp = datetime.now().strftime("%Y-%m-%d_%H:%M")
+    def two_channel_preprocessing_str(self, channel_one:PreprocessingSpecification, channel_two:PreprocessingSpecification):
+        return "channel_one_{}_channel_two_{}".format(channel_one, channel_two)
 
-        without_file_format  = "CNN"
-        without_file_format += str(self.data_details)
-        without_file_format += "(kappa_{})_".format(kappa)
-        without_file_format += "(saved_{})_".format(timestamp)
+    def model_result_filename_template(self, kappa:float, 
+                                channel_one:PreprocessingSpecification, 
+                                channel_two:PreprocessingSpecification):
 
-        return without_file_format + ".keras"
-
-    def roc_curve_filename(self, kappa:float):
-        timestamp = datetime.now().strftime("%Y-%m-%d_%H:%M")
-
-        without_file_format  = "CNN_ROC"
-        without_file_format += str(self.data_details)
-        without_file_format += "(kappa_{})_".format(kappa)
-        without_file_format += "(saved_{})_".format(timestamp)
-
-        return without_file_format + ".png"
         
+        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
+        spec_str  = self.two_channel_preprocessing_str(channel_one, channel_two)
+
+        without_file_format  = "CNN_"
+        without_file_format += str(self.data_details)
+        without_file_format += "(kappa_{})_".format(kappa)
+        without_file_format += "({})_".format(spec_str)
+        without_file_format += "(saved_{})_".format(timestamp)
+
+        return without_file_format
+
+    def saved_model_filename(self, kappa:float,,
+                             channel_one:PreprocessingSpecification, 
+                             channel_two:PreprocessingSpecification):
+
+        return self.model_result_filename_template(kappa, channel_one, channel_two) + ".keras"
+
+    def roc_curve_filename(self, kappa:float,
+                           channel_one:PreprocessingSpecification, 
+                           channel_two:PreprocessingSpecification):
+
+        return self.model_result_filename_template(kappa, channel_one, channel_two) + ".png"

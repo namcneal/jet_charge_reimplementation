@@ -27,7 +27,7 @@ for directory in higher_directories:
 
 from FileSystemNavigation import Directories, Filenames
 from JetsFromFile import JetsFromFile
-from JetImages import JetImage
+from JetImages import JetImage, PreprocessingSpecification
 
 
 class JetChargeAttributes(object):
@@ -38,66 +38,41 @@ class JetChargeAttributes(object):
         self.jet_charge_kappa = jet_charge_kappa
 
 
-def generate_and_save_all_images(directories:Directories, filenames:Filenames, seeds:range, kappa):
-    generate_jet_image_memmaps(directories, filenames, seeds, kappa)
+def generate_and_save_all_images(directories:Directories, filenames:Filenames, 
+                                seeds:range, kappa:float, 
+                                channel_one_preprocessing_specification:PreprocessingSpecification,
+                                channel_two_preprocessing_specification:PreprocessingSpecification):
+
+    generate_jet_image_memmaps(directories, filenames, 
+                                seeds, kappa, 
+                                channel_one_preprocessing_specification,
+                                channel_two_preprocessing_specification)
 
 ##
 
+def generate_jet_image_memmaps(directories:Directories, filenames:Filenames, 
+                                seeds:range, kappa:float,
+                                channel_one_preprocessing_specification:PreprocessingSpecification,
+                                channel_two_preprocessing_specification:PreprocessingSpecification): 
 
-def generate_images_from_seed(directories:Directories, filenames:Filenames, jet_charge_data_attributes:JetChargeAttributes):
-    seed   = jet_charge_data_attributes.seed
-    energy_gev = jet_charge_data_attributes.energy_gev
-    kappa  = jet_charge_data_attributes.jet_charge_kappa
-    year   = jet_charge_data_attributes.year
+    # Generate the training, validation, and testing images and labels for all seeds
+    # These are saved as memory-mapped files in the output_data_root_dir
+    generate_images_from_all_seeds(directories, filenames, 
+                                    seeds, kappa, 
+                                    channel_one_preprocessing_specification,
+                                    channel_two_preprocessing_specification)
 
-    up_jet_datafile   = JetsFromFile(energy_gev,   "up", seed, directories.raw_data_directory, year)
-    down_jet_datafile = JetsFromFile(energy_gev, "down", seed, directories.raw_data_directory, year)
+    # Take the training images and labels and augment them to create more training data
+    augment_training_data(directories)
+
+    # Verify that all the memory-mapped files can be accessed 
+    verify_all_memmaps(directories)
 
 
-    up_jets   = up_jet_datafile.from_txt()
-    down_jets = down_jet_datafile.from_txt()
-
-    ## Find any jets with no particles
-    no_particles = [jet for jet in up_jets + down_jets if jet.get_num_particles() == 0]
-    if len(no_particles) > 0:
-        raise ValueError("Some jets have no particles")
-    
-    up_images   = np.stack([JetImage.two_channel_image_from_jet(jet, kappa) for jet in up_jets],   axis=0)
-    down_images = np.stack([JetImage.two_channel_image_from_jet(jet, kappa) for jet in down_jets], axis=0)
-    
-    return up_images, down_images
-
-def combine_up_down_images_create_labels(up_images:np.array, down_images:np.array):
-    if len(up_images.shape) != 4:
-        raise ValueError("The up images must have shape (num_images, num_channels, num_pixels, num_pixels)")
-
-    if len(down_images.shape) != 4:
-        raise ValueError("The down images must have shape (num_images, num_channels, num_pixels, num_pixels)")
-
-    if up_images.shape[1] != down_images.shape[1]:
-        raise ValueError("The number of channels in the up and down images must be the same")
-    
-    num_up   = up_images.shape[0]
-    num_down = down_images.shape[0]
-
-    all_images = np.concatenate([up_images, down_images], axis=0)
-    if all_images.dtype != np.float32:
-        all_images = all_images.astype(np.float32)
-
-    # The labels are 0 for up and 1 for down
-    is_down = np.concatenate([np.zeros(num_up), np.ones(num_down)])
-
-    # Interleaf the up and down images
-    interleafed_idx = list(range(num_up + num_down))
-    interleafed_idx[::2]  = range(num_up)
-    interleafed_idx[1::2] = range(num_up, num_up + num_down)
-    
-    all_images = all_images[interleafed_idx,:,:,:]
-    is_down    = is_down[interleafed_idx]
-
-    return all_images, is_down
-
-def generate_images_from_all_seeds(directories:Directories, filenames:Filenames, seeds:range, kappa:float):
+def generate_images_from_all_seeds(directories:Directories, filenames:Filenames, 
+                                    seeds:range, kappa:float,
+                                    channel_one_preprocessing_specification:PreprocessingSpecification,
+                                    channel_two_preprocessing_specification:PreprocessingSpecification):
     # Multiplied by two for up and down
     total_num_images_per_seed = 2 * JetsFromFile.JET_EVENTS_PER_FILE
 
@@ -136,8 +111,8 @@ def generate_images_from_all_seeds(directories:Directories, filenames:Filenames,
         print("\tAll jet images have been generated and labelled. Up and down images interlaced.".format(seed_no))
         print("\tPreprocessing the images' first (i.e. momentum) channel ".format(seed_no))
 
-        # Only the first channel is preprocessed (i.e. zero-centered and scaled by the standard deviation)
-        all_images = JetImage.preprocess_a_channel(all_images, channel_idx=0)
+        all_images = JetImage.preprocess_a_channel(all_images, channel_idx=0, preprocessing_specification=channel_one_preprocessing_specification)
+        all_images = JetImage.preprocess_a_channel(all_images, channel_idx=1, preprocessing_specification=channel_two_preprocessing_specification)
 
         # Convert the labels to a one-hot encoding
         all_labels = torch.nn.functional.one_hot(torch.from_numpy(is_down).long(), 2).numpy()
@@ -191,16 +166,59 @@ def generate_images_from_all_seeds(directories:Directories, filenames:Filenames,
         print("\tImages and labels saved to memmap files for seed {}.".format(seed_no))
         print("\tSaved in total: {} training, {} validation, and {} testing images.".format(num_training, num_validation, num_testing))
 
-def generate_jet_image_memmaps(directories:Directories, filenames:Filenames, seeds:range, kappa:float): 
-    # Generate the training, validation, and testing images and labels for all seeds
-    # These are saved as memory-mapped files in the output_data_root_dir
-    generate_images_from_all_seeds(directories, filenames, seeds, kappa)
+def generate_images_from_seed(directories:Directories, filenames:Filenames, 
+                                jet_charge_data_attributes:JetChargeAttributes):
+    seed   = jet_charge_data_attributes.seed
+    energy_gev = jet_charge_data_attributes.energy_gev
+    kappa  = jet_charge_data_attributes.jet_charge_kappa
+    year   = jet_charge_data_attributes.year
 
-    # Take the training images and labels and augment them to create more training data
-    augment_training_data(directories)
+    up_jet_datafile   = JetsFromFile(energy_gev,   "up", seed, directories.raw_data_directory, year)
+    down_jet_datafile = JetsFromFile(energy_gev, "down", seed, directories.raw_data_directory, year)
 
-    # Verify that all the memory-mapped files can be accessed 
-    verify_all_memmaps(directories)
+
+    up_jets   = up_jet_datafile.from_txt()
+    down_jets = down_jet_datafile.from_txt()
+
+    ## Find any jets with no particles
+    no_particles = [jet for jet in up_jets + down_jets if jet.get_num_particles() == 0]
+    if len(no_particles) > 0:
+        raise ValueError("Some jets have no particles")
+    
+    up_images   = np.stack([JetImage.two_channel_image_from_jet(jet, kappa) for jet in up_jets],   axis=0)
+    down_images = np.stack([JetImage.two_channel_image_from_jet(jet, kappa) for jet in down_jets], axis=0)
+    
+    return up_images, down_images
+
+def combine_up_down_images_create_labels(up_images:np.array, down_images:np.array):
+    if len(up_images.shape) != 4:
+        raise ValueError("The up images must have shape (num_images, num_channels, num_pixels, num_pixels)")
+
+    if len(down_images.shape) != 4:
+        raise ValueError("The down images must have shape (num_images, num_channels, num_pixels, num_pixels)")
+
+    if up_images.shape[1] != down_images.shape[1]:
+        raise ValueError("The number of channels in the up and down images must be the same")
+    
+    num_up   = up_images.shape[0]
+    num_down = down_images.shape[0]
+
+    all_images = np.concatenate([up_images, down_images], axis=0)
+    if all_images.dtype != np.float32:
+        all_images = all_images.astype(np.float32)
+
+    # The labels are 0 for up and 1 for down
+    is_down = np.concatenate([np.zeros(num_up), np.ones(num_down)])
+
+    # Interleaf the up and down images
+    interleafed_idx = list(range(num_up + num_down))
+    interleafed_idx[::2]  = range(num_up)
+    interleafed_idx[1::2] = range(num_up, num_up + num_down)
+    
+    all_images = all_images[interleafed_idx,:,:,:]
+    is_down    = is_down[interleafed_idx]
+
+    return all_images, is_down
 
 def augment_training_data(directories:Directories):
 

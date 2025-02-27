@@ -1,6 +1,9 @@
+from enum import enum
+import matplotlib.pyplot as plt
+import numpy as np
 import os
 import sys
-# sys
+
 # 
 # Get the absolute path of the higher directory
 higher_directories = [os.path.abspath(os.path.join(os.path.dirname(__file__), '..')), os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))]
@@ -12,8 +15,23 @@ for directory in higher_directories:
 from Jets import Jet
 
 
-import matplotlib.pyplot as plt
-import numpy as np
+class PreprocessingSpecification(object):
+    def __init__(self, use_L1_normalization=None, use_zero_centering=None, use_standardization=None):
+        option_present : bool = True
+        if use_L1_normalization is not None: use_L1 = option_present
+        if use_zero_centering   is not None: use_zero_centering = option_present
+        if use_standardization  is not None: use_standardization = option_present
+
+        self.specification : np.ndarray = np.array([use_L1, use_zero_centering, use_standardization])
+
+    @staticmethod
+    def generate_all_combinations():
+        for (l1, zero, standard) in itertools.product([False,True], repeat=3):
+            yield PreprocessingSpecification(l1, zero, standard)
+
+    def __str__(self):
+        return "L1_norm_{}_zero_center{}_standard_{}".format(*self.specification)
+
 
 """
 This class is responsible for generating images from jets.
@@ -82,6 +100,7 @@ class JetImage(object):
         valid_pixels = cls.get_valid_pixel_mask(eta_indices, phi_indices)
 
         return zip(eta_indices[valid_pixels], phi_indices[valid_pixels], pts[valid_pixels], charges[valid_pixels])
+
     @classmethod
     def two_channel_image_from_jet(cls, jet:Jet, kappa:float):
         first_channel  = cls.empty_channel()
@@ -111,25 +130,29 @@ class JetImage(object):
         return image
 
     @classmethod
-    def preprocess_a_channel(cls, many_images:np.array, channel_idx:int):
+    def preprocess_a_channel(cls, many_images:np.array, channel_idx:int, 
+                             preprocessing_specification:PreprocessingSpecification):
         if len(many_images.shape) == 4:
             ...
             # print("The input has shape: ", many_images.shape)   
         else:
-            raise ValueError("The input has shape: {}. It must be a 4D array".format(many_images.shape))
+            raise ValueError("The input has shape: {}. It must be a 4D array of shape (n_samples, n_channels, width, height)".format(many_images.shape))
         
-        # L1 normalization
-        sums = np.sum(many_images[:,channel_idx,:,:], axis=(1,2), keepdims=True)
-        many_images[:, channel_idx, :,:] = np.divide(many_images[:,channel_idx,:,:], sums, where= np.abs(sums) > 0)
+        if preprocessing_specification.specification[0]:
+            # L1 normalization
+            sums = np.sum(many_images[:,channel_idx,:,:], axis=(1,2), keepdims=True)
+            many_images[:, channel_idx, :,:] = np.divide(many_images[:,channel_idx,:,:], sums, where= np.abs(sums) > 0)
 
-        # Zero centering
-        mean = np.mean(many_images[:,channel_idx,:,:], axis=(0), keepdims=True)
-        many_images[:, channel_idx, :,:] -= mean
+        if preprocessing_specification.specification[1]:
+            # Zero centering
+            mean = np.mean(many_images[:,channel_idx,:,:], axis=(0), keepdims=True)
+            many_images[:, channel_idx, :,:] -= mean
 
-        # Rescaling by the standard deviation
-        for_numerical_stability = 1e-6
-        std  = np.std(many_images[:,channel_idx,:,:],  axis=(0), keepdims=True) + for_numerical_stability  
-        many_images[:, channel_idx, :,:] = np.divide(many_images[:,channel_idx,:,:], std, where= np.abs(std) > 0)
+        if preprocessing_specification.specification[2]:
+            # Rescaling by the standard deviation
+            for_numerical_stability = 1e-6
+            std  = np.std(many_images[:,channel_idx,:,:],  axis=(0), keepdims=True) + for_numerical_stability  
+            many_images[:, channel_idx, :,:] = np.divide(many_images[:,channel_idx,:,:], std, where= np.abs(std) > 0)
 
         return many_images
 
