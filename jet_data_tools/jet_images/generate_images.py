@@ -85,8 +85,8 @@ def generate_images_from_all_seeds(directories:Directories, filenames:Filenames,
 
     # In each of the three directories, create two subdirectories for the images and labels
     preprocessing_details = PreprocessingSpecification.two_channel_preprocessing_str(channel_one_preprocessing_specification, channel_two_preprocessing_specification)
-    train_val_test_images_dirs = [directories.output_image_directory(dataset_type, kappa, preprocessing_details) for dataset_type in ["training", "validation", "testing"]]
-    train_val_test_label_dirs  = [directories.output_label_directory(dataset_type, kappa, preprocessing_details) for dataset_type in ["training", "validation", "testing"]]
+    train_val_test_image_dirs = [directories.output_image_directory(dataset_type, kappa, preprocessing_details) for dataset_type in ["training", "validation", "testing"]]
+    train_val_test_label_dirs = [directories.output_label_directory(dataset_type, kappa, preprocessing_details) for dataset_type in ["training", "validation", "testing"]]
 
     all_directories_exist = True
     for dir in train_val_test_image_dirs + train_val_test_label_dirs:
