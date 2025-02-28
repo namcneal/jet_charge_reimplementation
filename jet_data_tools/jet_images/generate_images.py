@@ -63,15 +63,12 @@ def generate_jet_image_memmaps(directories:Directories, filenames:Filenames,
                                     channel_one_preprocessing_specification,
                                     channel_two_preprocessing_specification)
 
+    preprocessing_details = PreprocessingSpecification.two_channel_preprocessing_str(channel_one_preprocessing_specification, channel_two_preprocessing_specification)
     # Take the training images and labels and augment them to create more training data
-    augment_training_data(directories, kappa, 
-                          channel_one_preprocessing_specification,
-                          channel_two_preprocessing_specification)
+    augment_training_data(directories, kappa, preprocessing_details)
 
     # Verify that all the memory-mapped files can be accessed 
-    verify_all_memmaps(directories, kappa, 
-                       channel_one_preprocessing_specification,
-                       channel_two_preprocessing_specification)
+    verify_all_memmaps(directories, kappa, preprocessing_details)
 
 
 def generate_images_from_all_seeds(directories:Directories, filenames:Filenames, 
