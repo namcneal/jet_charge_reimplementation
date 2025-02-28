@@ -67,7 +67,7 @@ def run_one_kappa(args:argparse.Namespace, directories:Directories,
         cnn_model         = CNN(cnn_specification)
 
         training_history = cnn_model.train(directories, filenames, 
-                                            kappa, processing_detail_str,
+                                            kappa, preprocessing_detail_str,
                                             training_data_loader,
                                             validation_data_loader,
                                             args.batch_size, args.num_epochs)
