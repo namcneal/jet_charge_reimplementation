@@ -130,13 +130,12 @@ class CNN(object):
         return model
 
     def train(self, directories:Directories, filenames:Filenames, 
-                jet_charge_kappa:float, 
+                jet_charge_kappa:float, preprocessing_details:str,
                 training_image_label_data:DataLoader, 
                 validation_image_label_data:DataLoader,
                 batch_size:int, epochs:int):
 
-
-        checkpoint_filename  = "checkpoint_" + filenames.saved_model_filename(jet_charge_kappa)
+        checkpoint_filename  = "checkpoint_" + filenames.saved_model_filename(jet_charge_kappa, preprocessing_details)
         checkpoint_directory = directories.save_dir_for_kappa(jet_charge_kappa)
         checkpoint_filepath  = os.path.join(checkpoint_directory, checkpoint_filename)  
 
@@ -168,9 +167,7 @@ class CNN(object):
         return history
 
     def evaluate(self, directories:Directories, filenames:Filenames,
-                jet_charge_kappa:float,
-                channel_one_preprocessing_specification:PreprocessingSpecification,
-                channel_two_preprocessing_specification:PreprocessingSpecification,
+                jet_charge_kappa:float, preprocessing_details:str,
                 image_dataloader:DataLoader,
                 labels:np.ndarray):
 
@@ -181,8 +178,7 @@ class CNN(object):
         
         plot_dir  = directories.save_dir_for_kappa(jet_charge_kappa)
 
-        specs     = [channel_one_preprocessing_specification, channel_two_preprocessing_specification]
-        plot_name = filenames.roc_curve_filename(jet_charge_kappa, *specs)
+        plot_name = filenames.roc_curve_filename(jet_charge_kappa, preprocessing_details)
         
         just_down_quark_labels = labels[:,1]
         down_quark_efficiency_roc(filenames.data_details.energy_gev, filenames.data_details.data_year,
@@ -191,12 +187,9 @@ class CNN(object):
                                     plot_dir, plot_name)
 
     def save(self, directories:Directories, filenames:Filenames, 
-             jet_charge_kappa:float,
-             channel_one_preprocessing_specification:PreprocessingSpecification,
-             channel_two_preprocessing_specification:PreprocessingSpecification):
+             jet_charge_kappa:float, preprocessing_details:str):
         
-        specs = [channel_one_preprocessing_specification, channel_two_preprocessing_specification]
-        filename       = filenames.saved_model_filename(jet_charge_kappa, *specs)
+        filename       = filenames.saved_model_filename(jet_charge_kappa, preprocessing_details)
         save_directory = directories.save_dir_for_kappa(jet_charge_kappa)
         save_filepath  = os.path.join(save_directory, filename)
 

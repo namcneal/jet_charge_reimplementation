@@ -14,8 +14,7 @@ for directory in higher_directories:
 ##
 from JetImages import PreprocessingSpecification
 
-def two_channel_preprocessing_str(channel_one:PreprocessingSpecification, channel_two:PreprocessingSpecification):
-    return "channel_one_{}_channel_two_{}".format(channel_one, channel_two)
+
 
 class DataDetails(object):
     def __init__(self, data_year:int, energy_gev:int):
@@ -42,6 +41,7 @@ class Directories(object):
                             "jet_data_tools/jet_images", 
                             "keras_ver/cnn",]:
             self.subdirectories_with_imports.append(os.path.join(self.repository_root_directory, subdir_name))
+            sys.path.append(self.subdirectories_with_imports[-1])
 
         self.raw_data_directory  = raw_data_dir
         self.image_directory     = image_dir
@@ -50,38 +50,23 @@ class Directories(object):
     def save_dir_for_kappa(self, kappa:float):
         return os.path.join(self.save_data_directory, "kappa_{}".format(kappa))
 
-    def output_data_super_directory(self, dataset_type:str,
-                                    kappa:float, 
-                                    channel_one:PreprocessingSpecification, 
-                                    channel_two:PreprocessingSpecification):
-                                    
+    def output_data_super_directory(self, dataset_type:str, preprocessing_details:str):
         if dataset_type not in ["training", "validation", "testing"]:
             raise ValueError("dataset_type must be one of 'training', 'validation', 'testing'")
+        return os.path.join(self.image_directory, str(self.dataset_details), "{}".format(preprocessing_details), dataset_type)
 
-        return os.path.join(self.image_directory, str(self.dataset_details), dataset_type)
-
-    def output_image_directory(self, dataset_type:str, 
-                                kappa:float,
-                                channel_one:PreprocessingSpecification,
-                                channel_two:PreprocessingSpecification):
-        super_dir = self.output_data_super_directory(dataset_type, kappa, channel_one, channel_two)
+    def output_image_directory(self, dataset_type:str, kappa:float,preprocessing_details:str):
+        super_dir = self.output_data_super_directory(dataset_type, kappa, preprocessing_details)
         return os.path.join(super_dir, "images")
 
-    def output_label_directory(self, dataset_type:str,
-                                kappa:float,
-                                channel_one:PreprocessingSpecification,
-                                channel_two:PreprocessingSpecification):
-
-        super_dir = self.output_data_super_directory(dataset_type, kappa, channel_one, channel_two)
+    def output_label_directory(self, dataset_type:str, kappa:float, preprocessing_details:str):
+        super_dir = self.output_data_super_directory(dataset_type, kappa, preprocessing_details)
         return os.path.join(super_dir, "labels")
 
-    def all_output_data_directories(self, kappa:float, 
-                                    channel_one:PreprocessingSpecification, 
-                                    channel_two:PreprocessingSpecification):
-
+    def all_output_data_directories(self, kappa:float, preprocessing_details:str):
         for dataset_type in ["training", "validation", "testing"]:
-            yield (self.output_image_directory(dataset_type, kappa, channel_one, channel_two),
-                   self.output_label_directory(dataset_type, kappa, channel_one, channel_two))
+            yield (self.output_image_directory(dataset_type, kappa, preprocessing_details),
+                   self.output_label_directory(dataset_type, kappa, preprocessing_details))
 
 class Filenames(object):
     def __init__(self, data_details:DataDetails):
@@ -92,30 +77,19 @@ class Filenames(object):
 
 
 
-    def model_result_filename_template(self, kappa:float, 
-                                channel_one:PreprocessingSpecification, 
-                                channel_two:PreprocessingSpecification):
-
-        
+    def model_result_filename_template(self, kappa:float, preprocessing_details:str):
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
-        spec_str  = self.two_channel_preprocessing_str(channel_one, channel_two)
 
         without_file_format  = "CNN_"
         without_file_format += str(self.data_details)
         without_file_format += "(kappa_{})_".format(kappa)
-        without_file_format += "({})_".format(spec_str)
+        without_file_format += "({})_".format(preprocessing_details)
         without_file_format += "(saved_{})_".format(timestamp)
 
         return without_file_format
 
-    def saved_model_filename(self, kappa:float,
-                             channel_one:PreprocessingSpecification, 
-                             channel_two:PreprocessingSpecification):
+    def saved_model_filename(self, kappa:float, preprocessing_details:str):
+        return self.model_result_filename_template(kappa, preprocessing_details) + ".keras"
 
-        return self.model_result_filename_template(kappa, channel_one, channel_two) + ".keras"
-
-    def roc_curve_filename(self, kappa:float,
-                           channel_one:PreprocessingSpecification, 
-                           channel_two:PreprocessingSpecification):
-
-        return self.model_result_filename_template(kappa, channel_one, channel_two) + ".png"
+    def roc_curve_filename(self, kappa:float, preprocessing_details:str):
+        return self.model_result_filename_template(kappa, preprocessing_details) + "_ROC.png"

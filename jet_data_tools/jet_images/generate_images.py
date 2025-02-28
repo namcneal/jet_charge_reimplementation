@@ -84,9 +84,9 @@ def generate_images_from_all_seeds(directories:Directories, filenames:Filenames,
     total_num_images_per_seed = 2 * JetsFromFile.JET_EVENTS_PER_FILE
 
     # In each of the three directories, create two subdirectories for the images and labels
-    directory_name_params = [kappa, channel_one_preprocessing_specification, channel_two_preprocessing_specification]
-    train_val_test_images_dirs = [directories.output_image_directory(dataset_type, *directory_name_params) for dataset_type in ["training", "validation", "testing"]]
-    train_val_test_label_dirs  = [directories.output_label_directory(dataset_type, *directory_name_params) for dataset_type in ["training", "validation", "testing"]]
+    preprocessing_details = PreprocessingSpecification.two_channel_preprocessing_str(channel_one_preprocessing_specification, channel_two_preprocessing_specification)
+    train_val_test_images_dirs = [directories.output_image_directory(dataset_type, kappa, preprocessing_details) for dataset_type in ["training", "validation", "testing"]]
+    train_val_test_label_dirs  = [directories.output_label_directory(dataset_type, kappa, preprocessing_details) for dataset_type in ["training", "validation", "testing"]]
 
     all_directories_exist = True
     for dir in train_val_test_image_dirs + train_val_test_label_dirs:
@@ -179,7 +179,8 @@ def generate_images_from_all_seeds(directories:Directories, filenames:Filenames,
         print("\tSaved in total: {} training, {} validation, and {} testing images.".format(num_training, num_validation, num_testing))
 
 def generate_images_from_seed(directories:Directories, filenames:Filenames, 
-                                jet_charge_data_attributes:JetChargeAttributes):
+                              jet_charge_data_attributes:JetChargeAttributes):
+
     seed   = jet_charge_data_attributes.seed
     energy_gev = jet_charge_data_attributes.energy_gev
     kappa  = jet_charge_data_attributes.jet_charge_kappa
@@ -232,14 +233,11 @@ def combine_up_down_images_create_labels(up_images:np.array, down_images:np.arra
 
     return all_images, is_down
 
-def augment_training_data(directories:Directories, kappa:float,
-                        channel_one_preprocessing_specification:PreprocessingSpecification,
-                        channel_two_preprocessing_specification:PreprocessingSpecification):
-
+def augment_training_data(directories:Directories, kappa:float, preprocessing_details:str):
     # The directories for the training images and labels 
     # that are created in the function 'generate_images_from_all_seeds'
-    training_image_memmap_dir = directories.training_image_directory()
-    training_label_memmap_dir = directories.training_label_directory()
+    training_image_memmap_dir = directories.output_image_directory("training", kappa, preprocessing_details)
+    training_label_memmap_dir = directories.output_label_directory("training", kappa, preprocessing_details)
 
     print("Augmenting the training data.")
     # Load the existing images and labels memory-mapped files that were created
@@ -275,10 +273,8 @@ def verify_all_memmap_elements(memmap_dir:str):
 
     print("All elements in the memmap at {} are accessible.".format(memmap_dir))
 
-def verify_all_memmaps(directories:Directories, kappa:float,
-                        channel_one_preprocessing_specification:PreprocessingSpecification,
-                        channel_two_preprocessing_specification:PreprocessingSpecification):
+def verify_all_memmaps(directories:Directories, kappa:float, preprocessing_details:str):
                 
-    for (image_dir, label_dir) in directories.all_output_data_directories(kappa, channel_one_preprocessing_specification, channel_two_preprocessing_specification):
+    for (image_dir, label_dir) in directories.all_output_data_directories(kappa, preprocessing_details):
         verify_all_memmap_elements(image_dir)
         verify_all_memmap_elements(label_dir) 

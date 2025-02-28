@@ -50,8 +50,14 @@ def run_one_kappa(args:argparse.Namespace, directories:Directories,
                                      jet_data_seeds, kappa,
                                      channel_one_spec, channel_two_spec)
 
-        training_dataset   = MemmapDataset.datasets_from_memmaps(directories.training_image_directory(),   directories.training_label_directory())
-        validation_dataset = MemmapDataset.datasets_from_memmaps(directories.validation_image_directory(), directories.validation_label_directory())
+        preprocessing_detail_str = PreprocessingSpecification.two_channel_preprocessing_str(channel_one_spec, channel_two_spec)
+
+        training_image_directory   = directories.output_image_directory("training",   kappa, preprocessing_detail_str)
+        training_label_directory   = directories.output_label_directory("training",   kappa, preprocessing_detail_str)
+        validation_image_directory = directories.output_image_directory("validation", kappa, preprocessing_detail_str)
+        validation_label_directory = directories.output_label_directory("validation", kappa, preprocessing_detail_str)
+        training_dataset   = MemmapDataset.datasets_from_memmaps(training_image_directory,   training_label_directory)
+        validation_dataset = MemmapDataset.datasets_from_memmaps(validation_image_directory, validation_label_directory)
 
         training_data_loader   = DataLoader(training_dataset,   shuffle=True, batch_size=args.batch_size)
         validation_data_loader = DataLoader(validation_dataset, shuffle=True, batch_size=args.batch_size)
@@ -60,24 +66,26 @@ def run_one_kappa(args:argparse.Namespace, directories:Directories,
         cnn_model         = CNN(cnn_specification)
 
         training_history = cnn_model.train(directories, filenames, 
-                                            kappa,
+                                            kappa, processing_detail_str,
                                             training_data_loader,
                                             validation_data_loader,
                                             args.batch_size, args.num_epochs)
 
-        testing_dataset = MemmapDataset.datasets_from_memmaps(directories.testing_image_directory(), directories.testing_label_directory())
+        testing_image_directory = directories.output_image_directory("testing", kappa, preprocessing_detail_str)
+        testing_label_directory = directories.output_label_directory("testing", kappa, preprocessing_detail_str)
+        testing_dataset = MemmapDataset.datasets_from_memmaps(testing_image_directory, testing_label_directory)
         
         testing_batch_size        = args.batch_size
         testing_images_dataloader = DataLoader(testing_dataset.just_images(), batch_size=testing_batch_size)
         testing_labels            = testing_dataset.labels
 
         cnn_model.evaluate(directories, filenames,
-                            kappa,
-                            channel_one_spec, channel_two_spec,
+                            kappa, preprocessing_detail_str,
                             testing_images_dataloader, 
                             testing_dataset.labels)
 
-        cnn_model.save(directories, filenames, kappa)
+        cnn_model.save(directories, filenames, 
+                        kappa, preprocessing_detail_str)
 
 def main(args:argparse.Namespace):
     directories = configure_system(args)
