@@ -31,8 +31,8 @@ class PreprocessingSpecification(object):
     def __str__(self):
         return "L1_norm_{}_zero_center{}_standard_{}".format(*self.specification)
 
-    @staticmethod
-    def two_channel_preprocessing_str(channel_one:PreprocessingSpecification, channel_two:PreprocessingSpecification):
+    @classmethod
+    def two_channel_preprocessing_str(channel_one, channel_two):
         return "channel_one_{}_channel_two_{}".format(channel_one, channel_two)
 
 
