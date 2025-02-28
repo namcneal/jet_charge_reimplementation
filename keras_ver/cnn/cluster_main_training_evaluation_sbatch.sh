@@ -1,5 +1,5 @@
 #!/bin/bash 
-#SBATCH	-t 1-00:00
+#SBATCH	-t 3-00:00
 #SBATCH -p gpu_requeue
 #SBATCH --mem 20000
 #SBATCH -c 1 
