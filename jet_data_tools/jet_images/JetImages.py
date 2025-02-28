@@ -17,7 +17,7 @@ from Jets import Jet
 
 class PreprocessingSpecification(object):
     def __init__(self, use_L1_normalization:bool, use_zero_centering:bool, use_standardization:bool):
-        self.specification : np.ndarray = np.array([use_L1, use_zero_centering, use_standardization])
+        self.specification : np.ndarray = np.array([use_L1_normalization, use_zero_centering, use_standardization])
 
     @staticmethod
     def generate_all_combinations():
