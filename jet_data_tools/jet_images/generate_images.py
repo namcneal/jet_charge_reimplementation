@@ -54,14 +54,15 @@ def generate_jet_image_memmaps(directories:Directories, filenames:Filenames,
                                 seeds:range, kappa:float,
                                 channel_one_preprocessing_specification:PreprocessingSpecification,
                                 channel_two_preprocessing_specification:PreprocessingSpecification,
-                                overwrite_existing=False): 
+                                overwrite_existing=True): 
 
     # Generate the training, validation, and testing images and labels for all seeds
     # These are saved as memory-mapped files in the output_data_root_dir
     generate_images_from_all_seeds(directories, filenames, 
                                     seeds, kappa, 
                                     channel_one_preprocessing_specification,
-                                    channel_two_preprocessing_specification)
+                                    channel_two_preprocessing_specification,
+                                    overwrite_existing=overwrite_existing)
 
     preprocessing_details = PreprocessingSpecification.two_channel_preprocessing_str(channel_one_preprocessing_specification, channel_two_preprocessing_specification)
     # Take the training images and labels and augment them to create more training data
@@ -75,7 +76,7 @@ def generate_images_from_all_seeds(directories:Directories, filenames:Filenames,
                                     seeds:range, kappa:float,
                                     channel_one_preprocessing_specification:PreprocessingSpecification,
                                     channel_two_preprocessing_specification:PreprocessingSpecification,
-                                    overwrite_existing=False):
+                                    overwrite_existing=True):
 
     # Multiplied by two for up and down
     total_num_images_per_seed = 2 * JetsFromFile.JET_EVENTS_PER_FILE

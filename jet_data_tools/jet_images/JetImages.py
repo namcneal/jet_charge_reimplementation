@@ -16,12 +16,7 @@ from Jets import Jet
 
 
 class PreprocessingSpecification(object):
-    def __init__(self, use_L1_normalization=None, use_zero_centering=None, use_standardization=None):
-        option_present : bool = True
-        if use_L1_normalization is not None: use_L1 = option_present
-        if use_zero_centering   is not None: use_zero_centering = option_present
-        if use_standardization  is not None: use_standardization = option_present
-
+    def __init__(self, use_L1_normalization:bool, use_zero_centering:bool, use_standardization:bool):
         self.specification : np.ndarray = np.array([use_L1, use_zero_centering, use_standardization])
 
     @staticmethod
