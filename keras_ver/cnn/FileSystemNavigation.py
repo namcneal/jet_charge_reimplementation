@@ -12,9 +12,6 @@ for directory in higher_directories:
     if directory not in sys.path: sys.path.append(directory)
 
 ##
-from JetImages import PreprocessingSpecification
-
-
 
 class DataDetails(object):
     def __init__(self, data_year:int, energy_gev:int):
