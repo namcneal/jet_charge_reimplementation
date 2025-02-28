@@ -47,10 +47,10 @@ class Directories(object):
     def save_dir_for_kappa(self, kappa:float):
         return os.path.join(self.save_data_directory, "kappa_{}".format(kappa))
 
-    def output_data_super_directory(self, dataset_type:str, preprocessing_details:str):
+    def output_data_super_directory(self, dataset_type:str, kappa:float, preprocessing_details:str):
         if dataset_type not in ["training", "validation", "testing"]:
             raise ValueError("dataset_type must be one of 'training', 'validation', 'testing'")
-        return os.path.join(self.image_directory, str(self.dataset_details), "{}".format(preprocessing_details), dataset_type)
+        return os.path.join(self.image_directory, str(self.dataset_details), "kappa_{}".format(kappa), "{}_".format(preprocessing_details), dataset_type)
 
     def output_image_directory(self, dataset_type:str, kappa:float,preprocessing_details:str):
         super_dir = self.output_data_super_directory(dataset_type, kappa, preprocessing_details)
