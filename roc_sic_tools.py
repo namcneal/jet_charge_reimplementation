@@ -50,7 +50,7 @@ def down_quark_efficiency_roc(data_year:int, energy_gev:float, kappa:float,
     down_quark_efficiencies = down_quark_efficiencies[increasing_down_quark_efficiencies]
     up_quark_efficiencies   = up_quark_efficiencies[increasing_down_quark_efficiencies]
     
-    auc = sp.integrate.simpson(up_quark_efficiencies, x=down_quark_efficiencies)
+    auc = sp.integrate.trapezoid(up_quark_efficiencies, x=down_quark_efficiencies)
 
     plt.clf()
     plt.plot(down_quark_efficiencies, up_quark_efficiencies, color='navy', lw=2)    
