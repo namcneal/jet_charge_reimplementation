@@ -46,6 +46,8 @@ def run_one_kappa(args:argparse.Namespace, directories:Directories,
     
     all_preprocessing_combinations = PreprocessingSpecification.generate_all_combinations()
     for (channel_one_spec, channel_two_spec) in itertools.product(all_preprocessing_combinations, repeat=2):
+        if channel_one_spec.specification[0] or channel_two_spec.specification[0]:
+            continue
 
         generate_and_save_all_images(directories, filenames, 
                                      jet_data_seeds, kappa,
@@ -92,7 +94,7 @@ def main(args:argparse.Namespace):
     directories = configure_system(args)
 
     all_jet_data_seeds = range(args.min_data_seed, args.max_data_seed + 1)
-    all_kappas = [0.2, 0.3]
+    all_kappas = [0.1]
 
     # all_kappas = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7]
 
