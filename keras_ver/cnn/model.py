@@ -17,7 +17,7 @@ from keras.layers import Dense, Dropout, Activation, Flatten, Conv2D, MaxPooling
 
 from JetImages import PreprocessingSpecification
 from FileSystemNavigation import Directories, Filenames, DataDetails
-from roc_sic_tools import down_quark_efficiency_roc
+from roc_sic_tools import down_quark_efficiency_roc_and_sic
 
 class CNNSpecification(object):
     def __init__(self, 
@@ -181,7 +181,7 @@ class CNN(object):
         filename = filenames.model_result_filename_template(jet_charge_kappa, preprocessing_details)
         
         just_down_quark_labels = labels[:,1]
-        down_quark_efficiency_roc(filenames.data_details.energy_gev, filenames.data_details.data_year,
+        down_quark_efficiency_roc_and_sic(filenames.data_details.energy_gev, filenames.data_details.data_year,
                                     jet_charge_kappa,
                                     predicted_probability_is_down_quark, just_down_quark_labels, 
                                     eval_dir, filename)
