@@ -89,7 +89,7 @@ def down_quark_efficiency_roc_and_sic(data_year:int, energy_gev:float, kappa:flo
     plt.xlabel("Down Quark (Signal) True Positive Rate")
     plt.title(r"SIC curve for {} GeV Jets ({} Data) at $\kappa$={}".format(data_year, energy_gev, kappa))
 
-    fig_filepath = os.path.join(plot_output_dir, os.path.join(plot_output_filename, "SIC")))
+    fig_filepath = os.path.join(plot_output_dir, os.path.join(plot_output_filename, "SIC"))
     plt.savefig(fig_filepath)
     plt.clf()
     plt.close()
