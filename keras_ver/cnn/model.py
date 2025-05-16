@@ -83,7 +83,7 @@ class CNNSpecification(object):
 
             stopping_patience=5,
             loss='categorical_crossentropy',
-            opt=keras.optimizers.Adam(learning_rate=0.001, weight_decay=0.0),
+            opt=keras.optimizers.Adam(learning_rate=0.001),
         )
 
 class CNN(object):
