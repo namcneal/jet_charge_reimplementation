@@ -50,7 +50,7 @@ def down_quark_efficiency_roc_and_sic(data_year:int, energy_gev:float, kappa:flo
     if plot_output_dir[-1] != '/':
         plot_output_dir += '/'
 
-    np.savez(os.path.join(plot_output_dir, os.path.join(plot_output_filename, ".npz")), 
+    np.savez(os.path.join(plot_output_dir, plot_output_filename + ".npz"), 
             true_down_pos = down_quark_efficiencies,
             true_up_neg   = up_quark_efficiencies)
 
@@ -71,7 +71,7 @@ def down_quark_efficiency_roc_and_sic(data_year:int, energy_gev:float, kappa:flo
     plt.xlabel("Down Quark (Signal) True Positive Rate")
     plt.title(r"ROC curve for {} GeV Jets ({} Data) at $\kappa$={}".format(data_year, energy_gev, kappa))
 
-    fig_filepath = os.path.join(plot_output_dir, os.path.join(plot_output_filename, "ROC"))
+    fig_filepath = os.path.join(plot_output_dir, plot_output_filename + "ROC.png")
     plt.savefig(fig_filepath)
     plt.clf()
     plt.close()
@@ -89,7 +89,7 @@ def down_quark_efficiency_roc_and_sic(data_year:int, energy_gev:float, kappa:flo
     plt.xlabel("Down Quark (Signal) True Positive Rate")
     plt.title(r"SIC curve for {} GeV Jets ({} Data) at $\kappa$={}".format(data_year, energy_gev, kappa))
 
-    fig_filepath = os.path.join(plot_output_dir, os.path.join(plot_output_filename, "SIC"))
+    fig_filepath = os.path.join(plot_output_dir, plot_output_filename + "SIC.png")
     plt.savefig(fig_filepath)
     plt.clf()
     plt.close()
