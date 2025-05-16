@@ -94,7 +94,7 @@ def main(args:argparse.Namespace):
     directories = configure_system(args)
 
     all_jet_data_seeds = range(args.min_data_seed, args.max_data_seed + 1)
-    all_kappas = [0.1]
+    all_kappas = [0.1, 0.2, 0.3]
 
     # all_kappas = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7]
 

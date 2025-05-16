@@ -88,5 +88,3 @@ class Filenames(object):
     def saved_model_filename(self, kappa:float, preprocessing_details:str):
         return self.model_result_filename_template(kappa, preprocessing_details) + ".keras"
 
-    def roc_curve_filename(self, kappa:float, preprocessing_details:str):
-        return self.model_result_filename_template(kappa, preprocessing_details) + "_ROC.png"

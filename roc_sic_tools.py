@@ -3,16 +3,13 @@ import scipy as sp
 import matplotlib.pyplot as plt
 import os
 
-def down_quark_sic_curves(model_dir:str, model_filename:str,
-                        output_data_root_dir:str, energy_gev:int=1000, 
-                        kappa:float=0.2):
-    pass 
 
-def down_quark_efficiency_roc(data_year:int, energy_gev:float, kappa:float,
+def down_quark_efficiency_roc_and_sic(data_year:int, energy_gev:float, kappa:float,
                                 probability_is_down_quark:np.ndarray,
                                 down_quark_truth_labels:np.ndarray,
                                 plot_output_dir:str, 
                                 plot_output_filename:str,):
+    
     # The labels should be just for the down quarks specifically
     # Check to make sure the passed array is just one dimensional
     if len(np.shape(down_quark_truth_labels)) > 1:
@@ -50,25 +47,49 @@ def down_quark_efficiency_roc(data_year:int, energy_gev:float, kappa:float,
     down_quark_efficiencies = down_quark_efficiencies[increasing_down_quark_efficiencies]
     up_quark_efficiencies   = up_quark_efficiencies[increasing_down_quark_efficiencies]
     
-    auc = sp.integrate.trapezoid(up_quark_efficiencies, x=down_quark_efficiencies)
+    if plot_output_dir[-1] != '/':
+        plot_output_dir += '/'
 
+    np.savez(os.path.join(plot_output_filename, ".npz"), 
+            true_down_pos = down_quark_efficiencies,
+            true_up_neg   = up_quark_efficiencies)
+
+
+    ## ROC
     plt.clf()
+
     plt.plot(down_quark_efficiencies, up_quark_efficiencies, color='navy', lw=2)    
     plt.fill_between(down_quark_efficiencies, up_quark_efficiencies, color='navy', alpha=0.2)
+
+    auc = sp.integrate.trapezoid(up_quark_efficiencies, x=down_quark_efficiencies)
     plt.text(0.6, 0.1, "AUC: {:.3f}".format(auc), fontsize=12)
 
     plt.grid()
     plt.xticks(np.linspace(0,1,11))
     plt.yticks(np.linspace(0,1,11))
     plt.ylabel("Up Quark (Background) Rejection")
-    plt.xlabel("Down Quark (Signal) Acceptance")
+    plt.xlabel("Down Quark (Signal) True Positive Rate")
     plt.title(r"ROC curve for {} GeV Jets ({} Data) at $\kappa$={}".format(data_year, energy_gev, kappa))
 
-    if plot_output_dir[-1] != '/':
-        plot_output_dir += '/'
-    fig_filepath = os.path.join(plot_output_dir, plot_output_filename)
-
+    fig_filepath = os.path.join(plot_output_dir, os.path.join(plot_output_filename, "ROC"))
     plt.savefig(fig_filepath)
     plt.clf()
     plt.close()
 
+    ## SIC
+    plt.clf()
+
+    significance_improvement = down_quark_efficiencies / np.sqrt(up_quark_efficiencies)
+    plt.plot(down_quark_efficiencies, significance_improvement, color='navy', lw=2)    
+
+    plt.grid()
+    plt.xticks(np.linspace(0,1,11))
+    # plt.yticks(np.linspace(0,1,11))
+    plt.ylabel("Significance Improvement")
+    plt.xlabel("Down Quark (Signal) True Positive Rate")
+    plt.title(r"SIC curve for {} GeV Jets ({} Data) at $\kappa$={}".format(data_year, energy_gev, kappa))
+
+    fig_filepath = os.path.join(plot_output_dir, os.path.join(plot_output_filename, "SIC")))
+    plt.savefig(fig_filepath)
+    plt.clf()
+    plt.close()

@@ -176,15 +176,15 @@ class CNN(object):
             batch_as_array = np.array(batch)
             predicted_probability_is_down_quark[i*len(batch):(i+1)*len(batch)] = self.model.predict(batch_as_array)[:,1]
         
-        eval_dir  = directories.save_dir_for_kappa(jet_charge_kappa)
+        plot_dir  = directories.save_dir_for_kappa(jet_charge_kappa)
 
-        filename = filenames.model_result_filename_template(jet_charge_kappa, preprocessing_details)
+        plot_name = filenames.roc_curve_filename(jet_charge_kappa, preprocessing_details)
         
         just_down_quark_labels = labels[:,1]
         down_quark_efficiency_roc(filenames.data_details.energy_gev, filenames.data_details.data_year,
                                     jet_charge_kappa,
                                     predicted_probability_is_down_quark, just_down_quark_labels, 
-                                    eval_dir, filename)
+                                    plot_dir, plot_name)
 
     def save(self, directories:Directories, filenames:Filenames, 
              jet_charge_kappa:float, preprocessing_details:str):
