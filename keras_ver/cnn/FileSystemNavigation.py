@@ -85,6 +85,10 @@ class Filenames(object):
 
         return without_file_format
 
+
     def saved_model_filename(self, kappa:float, preprocessing_details:str):
         return self.model_result_filename_template(kappa, preprocessing_details) + ".keras"
+    
+    def saved_eval_plot_data(self, kappa:float, preprocessing_details:str):
+        return self.model_result_filename_template(kappa, preprocessing_details) + "efficiencies.npz"
 

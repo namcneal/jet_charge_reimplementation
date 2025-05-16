@@ -50,7 +50,7 @@ def down_quark_efficiency_roc_and_sic(data_year:int, energy_gev:float, kappa:flo
     if plot_output_dir[-1] != '/':
         plot_output_dir += '/'
 
-    np.savez(os.path.join(plot_output_filename, ".npz"), 
+    np.savez(os.path.join(plot_output_dir, os.path.join(plot_output_filename, ".npz")), 
             true_down_pos = down_quark_efficiencies,
             true_up_neg   = up_quark_efficiencies)
 
