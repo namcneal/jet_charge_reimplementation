@@ -46,7 +46,7 @@ def run_one_kappa(args:argparse.Namespace, directories:Directories,
     
     all_preprocessing_combinations = PreprocessingSpecification.generate_all_combinations()
     for (channel_one_spec, channel_two_spec) in itertools.product(all_preprocessing_combinations, repeat=2):
-        if channel_one_spec.specification[0] or channel_two_spec.specification[0]:
+        if not channel_one_spec.specification[2]:
             continue
 
         generate_and_save_all_images(directories, filenames, 

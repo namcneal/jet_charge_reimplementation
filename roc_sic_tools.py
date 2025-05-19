@@ -37,7 +37,7 @@ def down_quark_efficiency_roc_and_sic(data_year:int, energy_gev:float, kappa:flo
         predictions_is_up   = probability_is_down_quark <= threshold
 
         true_positives  = np.dot(predictions_is_down, down_quark_truth_labels)
-        true_negatives  = np.dot(predictions_is_up, up_quark_labels)
+        true_negatives  = np.dot(predictions_is_up,   up_quark_labels)
 
         down_quark_efficiencies[t_idx] = true_positives / num_down_quarks
         up_quark_efficiencies[t_idx]   = true_negatives / num_up_quarks
