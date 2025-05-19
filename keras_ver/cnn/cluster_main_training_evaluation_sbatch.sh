@@ -14,12 +14,13 @@ MIN_SEED=1
 MAX_SEED=10
 DATA_YEAR=2017
 DATA_ENERGY_GEV=1000
-NUM_EPOCHS=1
+NUM_EPOCHS=35
 
 RAW_DATA_DIR=/n/home02/nmcneal/jet_tagging/data
 OUT_JET_IMAGE_DIR=/n/netscratch/reece_lab/Lab/noah/data_from_training_cnn
 SAVE_DATA_DIR=/n/home02/nmcneal/jet_tagging/results
 
+export KERAS_BACKEND="torch"
 module load python/3.10.13-fasrc01
 source activate pt2.3.0_cuda12.1
 
