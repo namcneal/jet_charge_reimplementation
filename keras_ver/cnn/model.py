@@ -102,12 +102,14 @@ class CNN(object):
                                 specification.conv_layer_filter_sizes, 
                                 specification.conv_pooling_kernel_sizes,
                                 specification.conv_dropout_percents)
+        
+        model.add(keras.Input(shape=(specification.num_image_channels, specification.image_size, specification.image_size)))
 
         for i,(num_filters, filter_size, pooling_kernel_size, dropout_percent) in enumerate(params_each_layer):
             kwargs : Dict = {}
             # is_input_layer = i > 0
             # if is_input_layer:
-            #     kwargs = {'input_shape': (specification.num_image_channels, specification.image_size, specification.image_size)}
+                
 
             model.add(Conv2D(num_filters, filter_size, 
                                 kernel_initializer = 'he_uniform', 
@@ -132,6 +134,9 @@ class CNN(object):
                           optimizer = specification.opt(specification.learning_rate), 
                           metrics = ['accuracy']
            )
+            
+
+            model.build()
             
             if summary:
                 model.summary()
