@@ -22,7 +22,7 @@ SAVE_DATA_DIR=/n/home02/nmcneal/jet_tagging/results
 
 export KERAS_BACKEND="torch"
 module load python/3.10.13-fasrc01
-source activate pt2.3.0_cuda12.1
+source activate jets_sep25
 
 PYTHON_SCRIPT=main.py
 python $PYTHON_SCRIPT --raw-jet-data-dir $RAW_DATA_DIR --min-data-seed $MIN_SEED --max-data-seed $MAX_SEED --data-year $DATA_YEAR --energy-gev $DATA_ENERGY_GEV --image-dir $OUT_JET_IMAGE_DIR --save-dir $SAVE_DATA_DIR --num-epochs $NUM_EPOCHS
