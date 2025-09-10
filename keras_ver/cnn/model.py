@@ -39,6 +39,7 @@ class CNNSpecification(object):
 
                     stopping_patience,
                     loss, 
+                    learning_rate,
                     opt,):
 
         self.image_size = image_size
@@ -60,6 +61,7 @@ class CNNSpecification(object):
 
         self.stopping_patience = stopping_patience
         self.loss = loss
+        self.learning_rate = learning_rate
         self.opt = opt
 
     @staticmethod
@@ -83,7 +85,8 @@ class CNNSpecification(object):
 
             stopping_patience=5,
             loss='categorical_crossentropy',
-            opt=keras.optimizers.Adam(learning_rate=0.001),
+            learning_rate=0.001,
+            opt=keras.optimizers.Adam,
         )
 
 class CNN(object):
@@ -123,12 +126,54 @@ class CNN(object):
         model.add(Dense(specification.num_final_dense_logits, activation = specification.final_dense_logits_activation))
 
         if comp:
-            model.compile(loss = specification.loss, optimizer = specification.opt, metrics = ['accuracy'])
+            # model.build(input_shape=(specification.num_image_channels, specification.image_size, specification.image_size))
+
+            model.compile(loss      = specification.loss, 
+                          optimizer = specification.opt(specification.learning_rate), 
+                          metrics = ['accuracy']
+           )
+            
             if summary:
                 model.summary()
 
         return model
 
+    """
+        Tunable parameters:
+        * num_conv_layers
+        * conv_layer_num_filters 
+        * conv_dropout_percents
+        * intermediate_dense_size
+        * intermediate_dense_dropout
+        * learning_rate
+    """
+    class HyperparameterRanges(object):
+        def __init__(self, specification:CNNSpecification):
+            self.parameter_ranges = dict(
+                num_conv_layers            = range(3, 7, 1),
+                conv_layer_num_filters     = [32, 64, 96, 128],
+                conv_dropout_percents      = range(0.1, 0.30, 0.02),
+                intermediate_dense_size    = [32, 64, 128, 256],
+                intermediate_dense_dropout = range(0.1, 0.5, 0.05),
+                learning_rate              = range(1e-4, 101e-4,5e-4)
+            )
+
+    def modify_specification(specification:CNNSpecification, options:HyperparameterRanges,  hp):
+        setattr(specification, 'num_conv_layers', hp.Choice('num_conv_layers', options.parameter_ranges['num_conv_layers']))
+        specification.conv_dropout_percents      = hp.Choice('conv_dropout_percents', options.parameter_ranges['conv_dropout_percents'])
+        specification.intermediate_dense_size    = hp.Choice('intermediate_dense_size', [8, 16, 32, 64])
+        specification.intermediate_dense_dropout = hp.Choice('intermediate_dense_dropout', [0.2, 0.35, 0.5])
+        specification.learning_rate              = hp.Choice('learning_rate', [1e-2, 1e-3, 1e-4])
+
+        return specification
+            
+    def lambda_create_from_hp(self, specification:CNNSpecification, options:HyperparameterRanges, comp=True, summary=True):
+       
+       
+
+       lambda hp: CNN.create_model(specification, comp=comp, summary=summary)
+
+    
     def train(self, directories:Directories, filenames:Filenames, 
                 jet_charge_kappa:float, preprocessing_details:str,
                 training_image_label_data:DataLoader, 

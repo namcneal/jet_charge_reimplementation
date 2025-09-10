@@ -77,6 +77,9 @@ def generate_images_from_all_seeds(directories:Directories, filenames:Filenames,
                                     channel_one_preprocessing_specification:PreprocessingSpecification,
                                     channel_two_preprocessing_specification:PreprocessingSpecification,
                                     overwrite_existing=True):
+    
+    data_year  = directories.dataset_details.data_year
+    energy_gev =  directories.dataset_details.energy_gev
 
     # Multiplied by two for up and down
     total_num_images_per_seed = 2 * JetsFromFile.JET_EVENTS_PER_FILE
@@ -108,7 +111,7 @@ def generate_images_from_all_seeds(directories:Directories, filenames:Filenames,
     for seed_no in seeds:
         print("Generating images for seed {} of {}".format(seed_no, num_seeds))
 
-        jet_charge_data_attributes = JetChargeAttributes(directories.dataset_details.data_year, seed_no, directories.dataset_details.energy_gev, kappa)
+        jet_charge_data_attributes = JetChargeAttributes(data_year, seed_no, energy_gev, kappa)
 
         # Generate the up and down images for this seed as a numpy array of shape (num_images, num_channels, num_pixels, num_pixels)
         up_images, down_images = generate_images_from_seed(directories, filenames, jet_charge_data_attributes)
@@ -117,6 +120,23 @@ def generate_images_from_all_seeds(directories:Directories, filenames:Filenames,
         # The up and down images are interlaced in the array, alternating between up and down
         # In the process the labels are created as well
         all_images, is_down  = combine_up_down_images_create_labels(up_images, down_images)
+
+        # Sample 25 images to save to disk per seed and save as matplot image
+        num_to_save = 25
+        sample_indices = np.random.choice(all_images.shape[0], size=num_to_save, replace=False)
+        sampled_labels = is_down[sample_indices]
+
+        for i, label in enumerate(sampled_labels):
+            quark = "up" if label == 0 else "down"
+            for ch in range(all_images.shape[1]):
+
+                image =  all_images[i,ch,:,:]
+
+                plt.imshow(image.transpose())
+                plt.title("Jet Image - Seed {} - Sample {}".format(seed_no, i))
+                plt.colorbar()
+                plt.savefig(os.path.join(train_val_test_image_dirs[0], "channel_{}_{}_quark_from_seed_{}_sample_{}_at_{}_GeV.png".format(ch, quark, seed_no, i, energy_gev)))
+                plt.close()
 
         assert all_images.shape[0] == total_num_images_per_seed
         assert is_down.shape[0]    == total_num_images_per_seed

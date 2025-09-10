@@ -110,7 +110,7 @@ class JetImage(object):
             first_channel[eta_idx, phi_idx]  += pt
 
             # Pt-weighted jet charge
-            second_channel[eta_idx, phi_idx] += charge * pt ** kappa
+            second_channel[eta_idx, phi_idx] += charge * (pt ** kappa)
 
         second_channel /= jet.get_total_pt() ** kappa
 

@@ -4,11 +4,13 @@
 *.png
 *.pyc
 *.pth
-*.txt
+*seed*.txt
+
+*run_local.sh
 
 
+*/up_down*/
 .vscode/
-data/up_down/
 cnn/training_logs/
 cnn/image_data/
 */__pycache__/

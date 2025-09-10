@@ -3,6 +3,58 @@ import scipy as sp
 import matplotlib.pyplot as plt
 import os
 
+# https://arxiv.org/abs/1010.3698
+
+def plot_roc_and_sic(data_year:int, energy_gev:float, kappa:float,
+                     signal_eff, background_eff,
+                     plot_output_dir:str, plot_output_filename:str,
+                     nonzero_epsilon=1e-6):
+    
+    sort_order = np.argsort(signal_eff)
+    signal_eff = signal_eff[sort_order]
+    background_eff = background_eff[sort_order]
+
+    ## ROC
+    plt.clf()
+
+    plt.plot(signal_eff, 1 - background_eff, color='navy', lw=2)    
+    plt.fill_between(signal_eff, 1-background_eff, color='navy', alpha=0.2)
+
+    auc = sp.integrate.trapezoid(1-background_eff, x=signal_eff)
+    plt.text(0.6, 0.1, "AUC: {:.3f}".format(auc), fontsize=12)
+
+    plt.grid()
+    plt.xticks(np.linspace(0,1,11))
+    plt.yticks(np.linspace(0,1,11))
+    plt.ylabel("Up Quark (Background) Rejection")
+    plt.xlabel("Down Quark (Signal) True Positive Rate")
+    plt.title(r"ROC curve for {} GeV Jets ({} Data) at $\kappa$={}".format(data_year, energy_gev, kappa))
+
+    fig_filepath = os.path.join(plot_output_dir, plot_output_filename + "ROC.png")
+    plt.savefig(fig_filepath)
+    plt.clf()
+    plt.close()
+
+    ## SIC
+    plt.clf()
+
+    significance_improvement = signal_eff / np.sqrt(1 - background_eff + nonzero_epsilon)
+    plt.plot(signal_eff, significance_improvement, color='red', lw=2)
+
+    plt.grid()
+    plt.xticks(np.linspace(0,1,11))
+    # plt.yticks(np.linspace(0,1,11))
+    plt.xlim(0.05,1.0)
+    plt.ylim(0.0,5.0)
+    plt.ylabel("Significance Improvement")
+    plt.xlabel("Down Quark (Signal) True Positive Rate")
+    plt.title(r"SIC curve for {} GeV Jets ({} Data) at $\kappa$={}".format(data_year, energy_gev, kappa))
+
+    fig_filepath = os.path.join(plot_output_dir, plot_output_filename + "SIC.png")
+    plt.savefig(fig_filepath)
+    plt.clf()
+    plt.close()
+
 
 def down_quark_efficiency_roc_and_sic(data_year:int, energy_gev:float, kappa:float,
                                 probability_is_down_quark:np.ndarray,
@@ -40,7 +92,7 @@ def down_quark_efficiency_roc_and_sic(data_year:int, energy_gev:float, kappa:flo
         true_negatives  = np.dot(predictions_is_up,   up_quark_labels)
 
         down_quark_efficiencies[t_idx] = true_positives / num_down_quarks
-        up_quark_efficiencies[t_idx]   = true_negatives / num_up_quarks
+        up_quark_efficiencies[t_idx]   = 1 - true_negatives / num_up_quarks
 
     # Sort the efficiencies along increasing horizontal axis, i.e. the down quark true positive rate
     increasing_down_quark_efficiencies = np.argsort(down_quark_efficiencies)
@@ -55,41 +107,50 @@ def down_quark_efficiency_roc_and_sic(data_year:int, energy_gev:float, kappa:flo
             true_up_neg   = up_quark_efficiencies)
 
 
-    ## ROC
-    plt.clf()
+    plot_roc_and_sic(data_year, energy_gev, kappa,
+                     down_quark_efficiencies, up_quark_efficiencies,
+                     plot_output_dir, plot_output_filename)
+    
 
-    plt.plot(down_quark_efficiencies, up_quark_efficiencies, color='navy', lw=2)    
-    plt.fill_between(down_quark_efficiencies, up_quark_efficiencies, color='navy', alpha=0.2)
 
-    auc = sp.integrate.trapezoid(up_quark_efficiencies, x=down_quark_efficiencies)
-    plt.text(0.6, 0.1, "AUC: {:.3f}".format(auc), fontsize=12)
+## 
 
+import pickle
+import numpy as np
+from matplotlib import pyplot as plt
+
+def fun():
+    old_data = "S:/home/documents/research/jet_tagging/reference_work/2017-jet-charge-kfraser/CNN_3_1000GEV_upquark_downquark_channels=2_ROC_data.pickle"
+    new_data = "S:/home/documents/research/jet_tagging/results_from_may/"
+    new_data += "CNN_(year_2017)_(energy_1000_gev)_(kappa_0.1)_(channel_one_L1_norm_True_zero_centerTrue_standard_True_channel_two_L1_norm_False_zero_centerTrue_standard_False)_(saved_2025-05-19_21-52)_.npz"
+
+    down = np.load(new_data)["true_down_pos"]
+    up   = 1 - np.load(new_data)["true_up_neg"]
+
+    new_se = down
+    new_be = 1 - up
+
+    old_se = None
+    old_be = None
+    with open(old_data, 'rb') as f: 
+        old_data = pickle.load(f)
+
+        print(old_data.keys())
+        
+        old_se = old_data["particle1_eff"]
+        old_be = old_data["particle2_eff"]
+
+    eps = 1e-6
+
+    plt.figure(figsize=(12,8))
+    plt.title("2017 vs 2025 CNN Comparison")
+    plt.plot(old_se, old_se / np.sqrt(1-old_be + eps), label="2017")
+    plt.plot(new_se, new_se / np.sqrt(1-new_be + eps), label="2025")
     plt.grid()
-    plt.xticks(np.linspace(0,1,11))
-    plt.yticks(np.linspace(0,1,11))
-    plt.ylabel("Up Quark (Background) Rejection")
-    plt.xlabel("Down Quark (Signal) True Positive Rate")
-    plt.title(r"ROC curve for {} GeV Jets ({} Data) at $\kappa$={}".format(data_year, energy_gev, kappa))
+    plt.xlabel("Down Quark True Positive Acceptance")
+    plt.xlim(0.005,1.0)
+    plt.ylabel("SI")
+    plt.legend()
+    plt.show()
 
-    fig_filepath = os.path.join(plot_output_dir, plot_output_filename + "ROC.png")
-    plt.savefig(fig_filepath)
-    plt.clf()
-    plt.close()
-
-    ## SIC
-    plt.clf()
-
-    significance_improvement = down_quark_efficiencies / np.sqrt(up_quark_efficiencies)
-    plt.plot(down_quark_efficiencies, significance_improvement, color='navy', lw=2)    
-
-    plt.grid()
-    plt.xticks(np.linspace(0,1,11))
-    # plt.yticks(np.linspace(0,1,11))
-    plt.ylabel("Significance Improvement")
-    plt.xlabel("Down Quark (Signal) True Positive Rate")
-    plt.title(r"SIC curve for {} GeV Jets ({} Data) at $\kappa$={}".format(data_year, energy_gev, kappa))
-
-    fig_filepath = os.path.join(plot_output_dir, plot_output_filename + "SIC.png")
-    plt.savefig(fig_filepath)
-    plt.clf()
-    plt.close()
+# fun()
