@@ -71,10 +71,10 @@ class CNNSpecification(object):
             num_image_channels=2,
 
             num_conv_layers=3,
-            conv_layer_num_filters=[64, 64, 64],
-            conv_layer_filter_sizes=[8, 4, 4],
-            conv_pooling_kernel_sizes=[2, 2, 2],
-            conv_dropout_percents=[0.18, 0.35, 0.35],
+            conv_layer_num_filters    =[64,   64,   64],
+            conv_layer_filter_sizes   =[8,    4,    4],
+            conv_pooling_kernel_sizes =[2,    2,    2],
+            conv_dropout_percents     =[0.18, 0.35, 0.35],
 
             intermediate_dense_size=64,
             intermediate_dense_dropout=0.35,
@@ -97,19 +97,15 @@ class CNN(object):
     @staticmethod
     def create_model(specification:CNNSpecification, comp=True, summary=True):
         model = Sequential()
+        model.add(keras.Input(shape=(specification.num_image_channels, specification.image_size, specification.image_size)))
 
         params_each_layer = zip(specification.conv_layer_num_filters, 
                                 specification.conv_layer_filter_sizes, 
                                 specification.conv_pooling_kernel_sizes,
                                 specification.conv_dropout_percents)
-        
-        model.add(keras.Input(shape=(specification.num_image_channels, specification.image_size, specification.image_size)))
 
         for i,(num_filters, filter_size, pooling_kernel_size, dropout_percent) in enumerate(params_each_layer):
             kwargs : Dict = {}
-            # is_input_layer = i > 0
-            # if is_input_layer:
-                
 
             model.add(Conv2D(num_filters, filter_size, 
                                 kernel_initializer = 'he_uniform', 
@@ -134,10 +130,7 @@ class CNN(object):
                           optimizer = specification.opt(specification.learning_rate), 
                           metrics = ['accuracy']
            )
-            
-
-            model.build()
-            
+                        
             if summary:
                 model.summary()
 
