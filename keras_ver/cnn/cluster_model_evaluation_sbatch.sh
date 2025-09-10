@@ -4,8 +4,8 @@
 #SBATCH --mem 20000
 #SBATCH -c 1 
 #SBATCH --gres=gpu 
-#SBATCH  -o ../../slurm_output/cnn.out
-#SBATCH -e ../../slurm_output/cnn.err
+#SBATCH  -o ./slurm_output/cnn.out
+#SBATCH -e ./slurm_output/cnn.err
 #SBATCH --mail-user=noahmcneal@g.harvard.edu
 #SBATCH --mail-type=BEGIN
 #SBATCH --mail-type=END
