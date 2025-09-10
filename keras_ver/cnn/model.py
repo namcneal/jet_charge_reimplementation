@@ -113,18 +113,18 @@ class CNN(object):
                                 activation = specification.conv_activation,
                                 data_format = 'channels_first',
                                 **kwargs)) 
-            model.add(MaxPooling2D(pool_size = pooling_kernel_size))
+            
+            model.add(MaxPooling2D(pool_size = pooling_kernel_size, data_format = 'channels_first'))
+            
             model.add(Dropout(dropout_percent))
 
         model.add(Flatten())
-
         model.add(Dense(specification.intermediate_dense_size, activation = specification.intermediate_dense_activation))
+        
         model.add(Dropout(specification.intermediate_dense_dropout))
-
         model.add(Dense(specification.num_final_dense_logits, activation = specification.final_dense_logits_activation))
 
         if comp:
-            # model.build(input_shape=(specification.num_image_channels, specification.image_size, specification.image_size))
 
             model.compile(loss      = specification.loss, 
                           optimizer = specification.opt(specification.learning_rate), 
