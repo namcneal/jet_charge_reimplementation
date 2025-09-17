@@ -1,3 +1,4 @@
+from copyreg import pickle
 import os, sys
 
 higher_directories = [os.path.abspath(os.path.join(os.path.dirname(__file__), '..')), 
@@ -108,11 +109,11 @@ class CNN(object):
             kwargs : Dict = {}
 
             model.add(Conv2D(num_filters, filter_size, 
-                                kernel_initializer = 'he_uniform', 
-                                padding = 'valid',
-                                activation = specification.conv_activation,
-                                data_format = 'channels_first',
-                                **kwargs)) 
+                            kernel_initializer = 'he_uniform', 
+                            padding = 'valid',
+                            activation = specification.conv_activation,
+                            data_format = 'channels_first',
+                            **kwargs)) 
             
             model.add(MaxPooling2D(pool_size = pooling_kernel_size, data_format = 'channels_first'))
             
@@ -230,12 +231,47 @@ class CNN(object):
                                     eval_dir, filename)
 
     def save(self, directories:Directories, filenames:Filenames, 
-             jet_charge_kappa:float, preprocessing_details:str):
+             jet_charge_kappa:float, preprocessing_details:str, training_history=None):
         
         filename       = filenames.saved_model_filename(jet_charge_kappa, preprocessing_details)
         save_directory = directories.save_dir_for_kappa(jet_charge_kappa)
-        save_filepath  = os.path.join(save_directory, filename)
 
+        if training_history is not None:
+            history_filename = filename + "training_history_dict.pkl"
+            history_filepath = os.path.join(save_directory, history_filename)
+
+            with open(history_filepath, 'wb') as file_pi:
+                pickle.dump(training_history.history, file_pi)
+
+        save_filepath  = os.path.join(save_directory, filename)
         self.model.save(save_filepath)
+
+    @classmethod
+    def load_model(cls, directories:Directories, filenames:Filenames, 
+                   jet_charge_kappa:float, preprocessing_details:str):
+
+        filename       = filenames.saved_model_filename(jet_charge_kappa, preprocessing_details)
+        load_directory = directories.save_dir_for_kappa(jet_charge_kappa)
+        load_filepath  = os.path.join(load_directory, filename)
+
+        loaded_model = keras.models.load_model(load_filepath)
+        cnn = cls(CNNSpecification.default())
+        cnn.model = loaded_model
+
+        return cnn
+    
+    def load_training_history(cls, directories:Directories, filenames:Filenames, 
+                   jet_charge_kappa:float, preprocessing_details:str):
+
+        filename       = filenames.saved_model_filename(jet_charge_kappa, preprocessing_details)
+        history_filename = filename + "training_history_dict.pkl"
+        load_directory = directories.save_dir_for_kappa(jet_charge_kappa)
+        load_filepath  = os.path.join(load_directory, history_filename)
+
+        with open(load_filepath, 'rb') as file_pi:
+            history_dict = pickle.load(file_pi)
+
+        return history_dict
+
 
 
