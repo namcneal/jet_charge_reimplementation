@@ -1,5 +1,6 @@
-from copyreg import pickle
+
 import os, sys
+import pickle
 
 higher_directories = [os.path.abspath(os.path.join(os.path.dirname(__file__), '..')), 
                       os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
