@@ -97,7 +97,6 @@ def run_one_kappa(args:argparse.Namespace, directories:Directories,
         
         testing_batch_size        = args.batch_size
         testing_images_dataloader = DataLoader(testing_dataset.just_images(), batch_size=testing_batch_size)
-        testing_labels            = testing_dataset.labels
 
         cnn_model.evaluate(directories, filenames,
                             kappa, preprocessing_detail_str,
@@ -105,7 +104,8 @@ def run_one_kappa(args:argparse.Namespace, directories:Directories,
                             testing_dataset.labels)
 
         cnn_model.save(directories, filenames, 
-                        kappa, preprocessing_detail_str)
+                        kappa, preprocessing_detail_str,
+                        training_history=training_history)
         
 
 def main(args:argparse.Namespace):
