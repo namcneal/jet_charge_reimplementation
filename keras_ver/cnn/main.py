@@ -47,9 +47,9 @@ def run_one_kappa(args:argparse.Namespace, directories:Directories,
 
     cnn_specification = CNNSpecification.default()
     cnn_model         = CNN(cnn_specification)
-    print(cnn_model.summary())
+    # print(cnn_model.summary())
 
-    return
+    # return
 
 
     # preprocessing_specification = PreprocessingSpecification(use_L1_normalization=True, use_zero_centering=True, use_standardization=True)
@@ -113,7 +113,7 @@ def main(args:argparse.Namespace):
     
 
     all_jet_data_seeds = range(args.min_data_seed, args.max_data_seed + 1)
-    all_kappas = [0.1, 0.2, 0.3]
+    all_kappas = [0.1]#, 0.2, 0.3]
 
     # all_kappas = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7]
 

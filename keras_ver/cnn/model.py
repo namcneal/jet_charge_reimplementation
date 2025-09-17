@@ -208,6 +208,7 @@ class CNN(object):
             shuffle           = True,
         )
 
+        print(keys=history.history.keys())
         return history
 
     def evaluate(self, directories:Directories, filenames:Filenames,
