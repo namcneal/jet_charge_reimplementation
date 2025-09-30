@@ -197,7 +197,7 @@ def generate_images_from_all_seeds(directories:Directories, data_details:DataDet
         print("\tImages and labels saved to memmap files for seed {}.".format(seed_no))
         print("\tSaved in total: {} training, {} validation, and {} testing images.".format(num_training, num_validation, num_testing))
 
-def generate_images_from_seed(directories:Directories, filenames:Filenames, 
+def generate_images_from_seed(directories:Directories,
                               jet_charge_data_attributes:JetChargeAttributes):
 
     seed   = jet_charge_data_attributes.seed
