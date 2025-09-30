@@ -17,10 +17,10 @@ def plot_roc_and_sic(data_year:int, energy_gev:float, kappa:float,
     ## ROC
     plt.clf()
 
-    plt.plot(signal_eff, 1 - background_eff, color='navy', lw=2)    
-    plt.fill_between(signal_eff, 1-background_eff, color='navy', alpha=0.2)
+    plt.plot(signal_eff, background_eff, color='navy', lw=2)    
+    plt.fill_between(signal_eff, background_eff, color='navy', alpha=0.2)
 
-    auc = sp.integrate.trapezoid(1-background_eff, x=signal_eff)
+    auc = sp.integrate.trapezoid(background_eff, x=signal_eff)
     plt.text(0.6, 0.1, "AUC: {:.3f}".format(auc), fontsize=12)
 
     plt.grid()
