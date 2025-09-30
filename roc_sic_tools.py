@@ -92,7 +92,7 @@ def down_quark_efficiency_roc_and_sic(data_year:int, energy_gev:float, kappa:flo
         true_negatives  = np.dot(predictions_is_up,   up_quark_labels)
 
         down_quark_efficiencies[t_idx] = true_positives / num_down_quarks
-        up_quark_efficiencies[t_idx]   = 1 - true_negatives / num_up_quarks
+        up_quark_efficiencies[t_idx]   = true_negatives / num_up_quarks
 
     # Sort the efficiencies along increasing horizontal axis, i.e. the down quark true positive rate
     increasing_down_quark_efficiencies = np.argsort(down_quark_efficiencies)
