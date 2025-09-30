@@ -80,8 +80,8 @@ def generate_images_from_all_seeds(directories:Directories, data_details:DataDet
                                     channel_two_preprocessing_specification:PreprocessingSpecification,
                                     overwrite_existing=True):
     
-    data_year  = directories.dataset_details.data_year
-    energy_gev = directories.dataset_details.energy_gev
+    data_year  = data_details.data_year
+    energy_gev = data_details.energy_gev
 
     # Multiplied by two for up and down
     total_num_images_per_seed = 2 * JetsFromFile.JET_EVENTS_PER_FILE
@@ -116,7 +116,7 @@ def generate_images_from_all_seeds(directories:Directories, data_details:DataDet
         jet_charge_data_attributes = JetChargeAttributes(data_year, seed_no, energy_gev, kappa)
 
         # Generate the up and down images for this seed as a numpy array of shape (num_images, num_channels, num_pixels, num_pixels)
-        up_images, down_images = generate_images_from_seed(directories, data_details, jet_charge_data_attributes)
+        up_images, down_images = generate_images_from_seed(directories, jet_charge_data_attributes)
 
         # Combine the up and down images into a single array of shape (2*num_images, num_channels, num_pixels, num_pixels)
         # The up and down images are interlaced in the array, alternating between up and down
