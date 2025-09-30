@@ -14,6 +14,8 @@ from pathlib import Path
 import mmap_ninja
 import torch
 
+from keras_ver.rnn.FileSystemNavigation import DataDetails
+
 
 # Get the absolute path of the higher directory
 
@@ -38,19 +40,19 @@ class JetChargeAttributes(object):
         self.jet_charge_kappa = jet_charge_kappa
 
 
-def generate_and_save_all_images(directories:Directories, filenames:Filenames, 
+def generate_and_save_all_images(directories:Directories, data_details:DataDetails,
                                 seeds:range, kappa:float, 
                                 channel_one_preprocessing_specification:PreprocessingSpecification,
                                 channel_two_preprocessing_specification:PreprocessingSpecification):
 
-    generate_jet_image_memmaps(directories, filenames, 
+    generate_jet_image_memmaps(directories, data_details,
                                 seeds, kappa, 
                                 channel_one_preprocessing_specification,
                                 channel_two_preprocessing_specification)
 
 ##
 
-def generate_jet_image_memmaps(directories:Directories, filenames:Filenames, 
+def generate_jet_image_memmaps(directories:Directories, data_details:DataDetails,
                                 seeds:range, kappa:float,
                                 channel_one_preprocessing_specification:PreprocessingSpecification,
                                 channel_two_preprocessing_specification:PreprocessingSpecification,
@@ -58,8 +60,7 @@ def generate_jet_image_memmaps(directories:Directories, filenames:Filenames,
 
     # Generate the training, validation, and testing images and labels for all seeds
     # These are saved as memory-mapped files in the output_data_root_dir
-    generate_images_from_all_seeds(directories, filenames, 
-                                    seeds, kappa, 
+    generate_images_from_all_seeds(directories, data_details,
                                     channel_one_preprocessing_specification,
                                     channel_two_preprocessing_specification,
                                     overwrite_existing=overwrite_existing)
@@ -72,14 +73,14 @@ def generate_jet_image_memmaps(directories:Directories, filenames:Filenames,
     verify_all_memmaps(directories, kappa, preprocessing_details)
 
 
-def generate_images_from_all_seeds(directories:Directories, filenames:Filenames, 
+def generate_images_from_all_seeds(directories:Directories, data_details:DataDetails,
                                     seeds:range, kappa:float,
                                     channel_one_preprocessing_specification:PreprocessingSpecification,
                                     channel_two_preprocessing_specification:PreprocessingSpecification,
                                     overwrite_existing=True):
     
     data_year  = directories.dataset_details.data_year
-    energy_gev =  directories.dataset_details.energy_gev
+    energy_gev = directories.dataset_details.energy_gev
 
     # Multiplied by two for up and down
     total_num_images_per_seed = 2 * JetsFromFile.JET_EVENTS_PER_FILE
@@ -114,7 +115,7 @@ def generate_images_from_all_seeds(directories:Directories, filenames:Filenames,
         jet_charge_data_attributes = JetChargeAttributes(data_year, seed_no, energy_gev, kappa)
 
         # Generate the up and down images for this seed as a numpy array of shape (num_images, num_channels, num_pixels, num_pixels)
-        up_images, down_images = generate_images_from_seed(directories, filenames, jet_charge_data_attributes)
+        up_images, down_images = generate_images_from_seed(directories, data_details, jet_charge_data_attributes)
 
         # Combine the up and down images into a single array of shape (2*num_images, num_channels, num_pixels, num_pixels)
         # The up and down images are interlaced in the array, alternating between up and down

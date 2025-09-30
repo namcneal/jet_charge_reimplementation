@@ -77,6 +77,8 @@ class JetImage(object):
         # Center the eta and phi pixel indices around the centroid
         eta_pixel_indices -= centroid_eta_pixel_idx
         phi_pixel_indices -= centroid_phi_pixel_idx
+        
+        # A mask is applied later, in the next function
 
         return eta_pixel_indices.astype(int), phi_pixel_indices.astype(int)
 
@@ -126,7 +128,7 @@ class JetImage(object):
             # Transverse momentum
             first_channel[eta_idx, phi_idx] += pt
 
-        return image
+        return first_channel
 
     @classmethod
     def preprocess_a_channel(cls, many_images:np.array, channel_idx:int, 
@@ -175,13 +177,13 @@ class JetImage(object):
         all_versions[2] = image_set[:,:, ::-1, ::-1]
 
         # The four translations of the image
-        all_versions[3] = np.roll(image_set, -1, axis=2) # Shift the whole array one space to the left
+        all_versions[3] = np.roll(image_set, -1, axis=2) # Shift the horizontal one space to the left
         all_versions[3][:,:,-1,:] = 0 # black out the rightmost column
 
-        all_versions[4] = np.roll(image_set, 1, axis=2) # Shift the whole array one space to the right
+        all_versions[4] = np.roll(image_set, 1, axis=2) # Shift the horizontal one space to the right
         all_versions[4][:,:,0,:] = 0  # black out the leftmost column
 
-        all_versions[5] = np.roll(image_set, -1, axis=3) # Shift the whole array one space down
+        all_versions[5] = np.roll(image_set, -1, axis=3) # Shift the vertical one space down
         all_versions[5][:,:,:,-1] = 0 # black out the bottom row
 
         all_versions[6] = np.roll(image_set, 1, axis=3) # Shift the whole array one space up

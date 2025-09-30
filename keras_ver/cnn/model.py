@@ -1,4 +1,5 @@
 
+import datetime
 import os, sys
 import pickle
 
@@ -11,6 +12,7 @@ for directory in higher_directories:
 
 ##
 import numpy as np 
+from matplotlib import pyplot as plt
 
 from torch.utils.data import DataLoader
 import keras
@@ -107,13 +109,15 @@ class CNN(object):
                                 specification.conv_dropout_percents)
 
         for i,(num_filters, filter_size, pooling_kernel_size, dropout_percent) in enumerate(params_each_layer):
-            kwargs : Dict = {}
+            kwargs : dict = {}
 
+            # "channels_first" corresponds to inputs with shape (batch_size, channels, height, width)
             model.add(Conv2D(num_filters, filter_size, 
                             kernel_initializer = 'he_uniform', 
                             padding = 'valid',
                             activation = specification.conv_activation,
                             data_format = 'channels_first',
+                            use_bias = True,
                             **kwargs)) 
             
             model.add(MaxPooling2D(pool_size = pooling_kernel_size, data_format = 'channels_first'))
@@ -122,8 +126,8 @@ class CNN(object):
 
         model.add(Flatten())
         model.add(Dense(specification.intermediate_dense_size, activation = specification.intermediate_dense_activation))
-        
         model.add(Dropout(specification.intermediate_dense_dropout))
+
         model.add(Dense(specification.num_final_dense_logits, activation = specification.final_dense_logits_activation))
 
         if comp:
@@ -137,50 +141,38 @@ class CNN(object):
                 model.summary()
 
         return model
-
-    """
-        Tunable parameters:
-        * num_conv_layers
-        * conv_layer_num_filters 
-        * conv_dropout_percents
-        * intermediate_dense_size
-        * intermediate_dense_dropout
-        * learning_rate
-    """
-    class HyperparameterRanges(object):
-        def __init__(self, specification:CNNSpecification):
-            self.parameter_ranges = dict(
-                num_conv_layers            = range(3, 7, 1),
-                conv_layer_num_filters     = [32, 64, 96, 128],
-                conv_dropout_percents      = range(0.1, 0.30, 0.02),
-                intermediate_dense_size    = [32, 64, 128, 256],
-                intermediate_dense_dropout = range(0.1, 0.5, 0.05),
-                learning_rate              = range(1e-4, 101e-4,5e-4)
-            )
-
-    def modify_specification(specification:CNNSpecification, options:HyperparameterRanges,  hp):
-        setattr(specification, 'num_conv_layers', hp.Choice('num_conv_layers', options.parameter_ranges['num_conv_layers']))
-        specification.conv_dropout_percents      = hp.Choice('conv_dropout_percents', options.parameter_ranges['conv_dropout_percents'])
-        specification.intermediate_dense_size    = hp.Choice('intermediate_dense_size', [8, 16, 32, 64])
-        specification.intermediate_dense_dropout = hp.Choice('intermediate_dense_dropout', [0.2, 0.35, 0.5])
-        specification.learning_rate              = hp.Choice('learning_rate', [1e-2, 1e-3, 1e-4])
-
-        return specification
-            
-    def lambda_create_from_hp(self, specification:CNNSpecification, options:HyperparameterRanges, comp=True, summary=True):
-       
-       
-
-       lambda hp: CNN.create_model(specification, comp=comp, summary=summary)
-
     
-    def train(self, directories:Directories, filenames:Filenames, 
+    @classmethod
+    def result_filename_template(cls, kappa:float, data_details:DataDetails, preprocessing_details:str):
+        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
+
+        without_file_format  = "CNN_"
+        without_file_format += "(saved_{})_".format(timestamp)
+        without_file_format += str(data_details)
+        without_file_format += "(kappa_{})_".format(kappa)
+        without_file_format += "({})_".format(preprocessing_details)
+
+        return without_file_format
+
+    @classmethod
+    def saved_model_filename(cls, kappa:float, data_details:DataDetails, preprocessing_details:str):
+        return cls.result_filename_template(kappa, data_details, preprocessing_details) + ".keras"
+
+    @classmethod
+    def efficiencies_filename(cls, kappa:float, data_details:DataDetails, preprocessing_details:str):
+        return cls.result_filename_template(kappa, data_details, preprocessing_details) + "efficiencies.npz"
+
+    @classmethod
+    def training_history_filename(cls, kappa:float, data_details:DataDetails, preprocessing_details:str):
+        return cls.result_filename_template(kappa, data_details, preprocessing_details) + "training_history_dict.pkl"
+
+    def train(self, directories:Directories, data_details:DataDetails,
                 jet_charge_kappa:float, preprocessing_details:str,
                 training_image_label_data:DataLoader, 
                 validation_image_label_data:DataLoader,
                 batch_size:int, epochs:int):
 
-        checkpoint_filename  = "checkpoint_" + filenames.saved_model_filename(jet_charge_kappa, preprocessing_details)
+        checkpoint_filename  = "checkpoint_" + self.saved_model_filename(jet_charge_kappa, data_details, preprocessing_details)
         checkpoint_directory = directories.save_dir_for_kappa(jet_charge_kappa)
         checkpoint_filepath  = os.path.join(checkpoint_directory, checkpoint_filename)  
 
@@ -210,7 +202,7 @@ class CNN(object):
         )
         return history
 
-    def evaluate(self, directories:Directories, filenames:Filenames,
+    def evaluate(self, directories:Directories, data_details:DataDetails,
                 jet_charge_kappa:float, preprocessing_details:str,
                 image_dataloader:DataLoader,
                 labels:np.ndarray):
@@ -222,35 +214,62 @@ class CNN(object):
         
         eval_dir  = directories.save_dir_for_kappa(jet_charge_kappa)
 
-        filename = filenames.model_result_filename_template(jet_charge_kappa, preprocessing_details)
+        filename = self.efficiencies_filename(jet_charge_kappa, data_details, preprocessing_details)
         
         just_down_quark_labels = labels[:,1]
-        down_quark_efficiency_roc_and_sic(filenames.data_details.energy_gev, filenames.data_details.data_year,
+        down_quark_efficiency_roc_and_sic(data_details.data_year, data_details.energy_gev,
                                     jet_charge_kappa,
                                     predicted_probability_is_down_quark, just_down_quark_labels, 
                                     eval_dir, filename)
-
-    def save(self, directories:Directories, filenames:Filenames, 
-             jet_charge_kappa:float, preprocessing_details:str, training_history=None):
         
-        filename       = filenames.saved_model_filename(jet_charge_kappa, preprocessing_details)
+    def save(self, directories:Directories, data_details:DataDetails,
+             jet_charge_kappa:float, preprocessing_details:str, training_history=None, plot_history=True):
+
+        filename       = self.saved_model_filename(jet_charge_kappa, data_details, preprocessing_details)
         save_directory = directories.save_dir_for_kappa(jet_charge_kappa)
+        save_filepath  = os.path.join(save_directory, filename)
+        self.model.save(save_filepath)
 
         if training_history is not None:
-            history_filename = filename + "training_history_dict.pkl"
-            history_filepath = os.path.join(save_directory, history_filename)
+            history_filepath = os.path.join(save_directory, self.training_history_filename(jet_charge_kappa, data_details, preprocessing_details))
 
             with open(history_filepath, 'wb') as file_pi:
                 pickle.dump(training_history.history, file_pi)
 
-        save_filepath  = os.path.join(save_directory, filename)
-        self.model.save(save_filepath)
+            if plot_history:
+                # Plot the training and validation loss and accuracy 
+                # in two different axes, top then bottom, in that order
+                plt.figure(figsize=(8, 12))
+                top_ax = plt.subplot(2, 1, 1)
+                bottom_ax = plt.subplot(2, 1, 2)
+
+                top_ax.plot(training_history.history['loss'], label='Training Loss', color='blue')
+                top_ax.plot(training_history.history['val_loss'], label='Validation Loss', color='orange')
+
+                bottom_ax.plot(training_history.history['accuracy'], label='Training Accuracy', color='blue')
+                bottom_ax.plot(training_history.history['val_accuracy'], label='Validation Accuracy', color='orange')
+
+                top_ax.set_title('Training and Validation Loss')
+                top_ax.set_xlabel('Epochs')
+                top_ax.set_ylabel('Loss')
+
+                bottom_ax.set_title('Training and Validation Accuracy')
+                bottom_ax.set_xlabel('Epochs')
+                bottom_ax.set_ylabel('Accuracy')
+
+                top_ax.legend()
+                bottom_ax.legend()
+
+                plt.tight_layout()
+                plot_filepath = os.path.join(save_directory, self.result_filename_template(jet_charge_kappa, data_details, preprocessing_details) + "training_history.png")
+                plt.savefig(plot_filepath)
+
 
     @classmethod
-    def load_model(cls, directories:Directories, filenames:Filenames, 
+    def load_model(cls, directories:Directories, data_details:DataDetails,
                    jet_charge_kappa:float, preprocessing_details:str):
 
-        filename       = filenames.saved_model_filename(jet_charge_kappa, preprocessing_details)
+        filename       = cls.saved_model_filename(jet_charge_kappa, data_details, preprocessing_details)
         load_directory = directories.save_dir_for_kappa(jet_charge_kappa)
         load_filepath  = os.path.join(load_directory, filename)
 
@@ -260,11 +279,9 @@ class CNN(object):
 
         return cnn
     
-    def load_training_history(cls, directories:Directories, filenames:Filenames, 
-                   jet_charge_kappa:float, preprocessing_details:str):
+    def load_training_history(cls, directories:Directories, data_details:DataDetails, jet_charge_kappa:float, preprocessing_details:str):
 
-        filename       = filenames.saved_model_filename(jet_charge_kappa, preprocessing_details)
-        history_filename = filename + "training_history_dict.pkl"
+        history_filename = cls.training_history_filename(jet_charge_kappa, data_details, preprocessing_details)
         load_directory = directories.save_dir_for_kappa(jet_charge_kappa)
         load_filepath  = os.path.join(load_directory, history_filename)
 
@@ -273,5 +290,40 @@ class CNN(object):
 
         return history_dict
 
+        
+    # """
+    #     Tunable parameters:
+    #     * num_conv_layers
+    #     * conv_layer_num_filters 
+    #     * conv_dropout_percents
+    #     * intermediate_dense_size
+    #     * intermediate_dense_dropout
+    #     * learning_rate
+    # """
+    # class HyperparameterRanges(object):
+    #     def __init__(self, specification:CNNSpecification):
+    #         self.parameter_ranges = dict(
+    #             num_conv_layers            = range(3, 7, 1),
+    #             conv_layer_num_filters     = [32, 64, 96, 128],
+    #             conv_dropout_percents      = range(0.1, 0.30, 0.02),
+    #             intermediate_dense_size    = [32, 64, 128, 256],
+    #             intermediate_dense_dropout = range(0.1, 0.5, 0.05),
+    #             learning_rate              = range(1e-4, 101e-4,5e-4)
+    #         )
+
+    # def modify_specification(specification:CNNSpecification, options:HyperparameterRanges,  hp):
+    #     setattr(specification, 'num_conv_layers', hp.Choice('num_conv_layers', options.parameter_ranges['num_conv_layers']))
+    #     specification.conv_dropout_percents      = hp.Choice('conv_dropout_percents', options.parameter_ranges['conv_dropout_percents'])
+    #     specification.intermediate_dense_size    = hp.Choice('intermediate_dense_size', [8, 16, 32, 64])
+    #     specification.intermediate_dense_dropout = hp.Choice('intermediate_dense_dropout', [0.2, 0.35, 0.5])
+    #     specification.learning_rate              = hp.Choice('learning_rate', [1e-2, 1e-3, 1e-4])
+
+    #     return specification
+            
+    # def lambda_create_from_hp(self, specification:CNNSpecification, options:HyperparameterRanges, comp=True, summary=True):
+       
+       
+
+    #    lambda hp: CNN.create_model(specification, comp=comp, summary=summary)
 
 

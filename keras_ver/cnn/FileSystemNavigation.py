@@ -64,31 +64,3 @@ class Directories(object):
         for dataset_type in ["training", "validation", "testing"]:
             yield (self.output_image_directory(dataset_type, kappa, preprocessing_details),
                    self.output_label_directory(dataset_type, kappa, preprocessing_details))
-
-class Filenames(object):
-    def __init__(self, data_details:DataDetails):
-        self.data_details = data_details
-
-    def data_details_str(self):
-        return dataset_details_str(self.data_details)
-
-
-
-    def model_result_filename_template(self, kappa:float, preprocessing_details:str):
-        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
-
-        without_file_format  = "CNN_"
-        without_file_format += str(self.data_details)
-        without_file_format += "(kappa_{})_".format(kappa)
-        without_file_format += "({})_".format(preprocessing_details)
-        without_file_format += "(saved_{})_".format(timestamp)
-
-        return without_file_format
-
-
-    def saved_model_filename(self, kappa:float, preprocessing_details:str):
-        return self.model_result_filename_template(kappa, preprocessing_details) + ".keras"
-    
-    def saved_eval_plot_data(self, kappa:float, preprocessing_details:str):
-        return self.model_result_filename_template(kappa, preprocessing_details) + "efficiencies.npz"
-
