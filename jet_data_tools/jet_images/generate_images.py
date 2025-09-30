@@ -27,7 +27,7 @@ higher_directories = [os.path.abspath(os.path.join(os.path.dirname(__file__), '.
 for directory in higher_directories:
     if directory not in sys.path: sys.path.append(directory)
 
-from FileSystemNavigation import Directories, Filenames
+from FileSystemNavigation import Directories
 from JetsFromFile import JetsFromFile
 from JetImages import JetImage, PreprocessingSpecification
 
