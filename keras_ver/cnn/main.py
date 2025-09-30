@@ -46,12 +46,13 @@ def run_one_kappa(args:argparse.Namespace, directories:Directories,
     filenames = Filenames(directories.dataset_details)
 
     cnn_specification = CNNSpecification.default()
-    cnn_model         = CNN(cnn_specification)
+    if getattr(args, 'learning_rate'):
+        cnn_specification.learning_rate = args.learning_rate
+
+    cnn_model = CNN(cnn_specification)
     # print(cnn_model.summary())
 
-    # return
-
-
+    # retu
     # preprocessing_specification = PreprocessingSpecification(use_L1_normalization=True, use_zero_centering=True, use_standardization=True)
     
 
@@ -113,7 +114,11 @@ def main(args:argparse.Namespace):
     
 
     all_jet_data_seeds = range(args.min_data_seed, args.max_data_seed + 1)
-    all_kappas = [0.1]#, 0.2, 0.3]
+    all_kappas = []
+    if getattr(args, 'kappa'):
+        all_kappas = [args.kappa]
+
+
 
     # all_kappas = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7]
 
@@ -128,11 +133,13 @@ if __name__ == '__main__':
     parser.add_argument('--max-data-seed',  type=int,   required=True)
     parser.add_argument('--data-year',      type=int,   required=True)
     parser.add_argument('--energy-gev',     type=int,   required=True)
+    parser.add_argument('--kappa',          type=float, required=False)
     parser.add_argument('--image-dir',      type=str,   required=True)
     parser.add_argument('--regen-images',   type=bool,  default=False)
     parser.add_argument('--save-dir',       type=str,   required=True)
     parser.add_argument('--batch-size',     type=int,   default=512)
     parser.add_argument('--num-epochs',      type=int,  default=35)
+    parser.add_argument('--learning-rate', type=float, required=False)
 
     main(parser.parse_args())
 

@@ -1,4 +1,6 @@
-Traceback (most recent call last):
-  File "/n/home02/nmcneal/jet_tagging/jet_charge_reimplementation/keras_ver/cnn/main.py", line 9, in <module>
-    from torch.utils.data import DataLoader
-ModuleNotFoundError: No module named 'torch'
+/n/home02/nmcneal/.conda/envs/jets_sep25/lib/python3.13/site-packages/torch/utils/data/_utils/collate.py:285: UserWarning: The given NumPy array is not writable, and PyTorch does not support non-writable tensors. This means writing to this tensor will result in undefined behavior. You may want to copy the array to protect its data or make it writable before converting it to a tensor. This type of warning will be suppressed for the rest of this program. (Triggered internally at /home/conda/feedstock_root/build_artifacts/libtorch_1752540242079/work/torch/csrc/utils/tensor_numpy.cpp:203.)
+  return collate([torch.as_tensor(b) for b in batch], collate_fn_map=collate_fn_map)
+2025-09-29 14:25:36.475505: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2025-09-29 14:25:36.531134: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 AVX512F AVX512_VNNI FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2025-09-29 14:25:50.743228: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
