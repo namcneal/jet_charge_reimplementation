@@ -20,7 +20,7 @@ from keras.models import Sequential, Model
 from keras.layers import Dense, Dropout, Activation, Flatten, Conv2D, MaxPooling2D
 
 from JetImages import PreprocessingSpecification
-from FileSystemNavigation import Directories, Filenames, DataDetails
+from FileSystemNavigation import Directories, DataDetails
 from roc_sic_tools import down_quark_efficiency_roc_and_sic
 
 class CNNSpecification(object):
