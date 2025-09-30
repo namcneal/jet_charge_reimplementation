@@ -61,6 +61,7 @@ def generate_jet_image_memmaps(directories:Directories, data_details:DataDetails
     # Generate the training, validation, and testing images and labels for all seeds
     # These are saved as memory-mapped files in the output_data_root_dir
     generate_images_from_all_seeds(directories, data_details,
+                                    seeds, kappa,
                                     channel_one_preprocessing_specification,
                                     channel_two_preprocessing_specification,
                                     overwrite_existing=overwrite_existing)
