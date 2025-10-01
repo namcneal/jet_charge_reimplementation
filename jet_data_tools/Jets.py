@@ -50,6 +50,9 @@ class Jet(object):
     
     def get_particle_charges(self):
         return self.particle_data[:,3].view()
+    
+    def get_total_pt(self):
+        return self.total_pt
 
     @classmethod
     def from_particles(cls, particles:list[Particle], origin:str):
