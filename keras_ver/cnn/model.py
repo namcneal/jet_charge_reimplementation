@@ -208,7 +208,7 @@ class CNN(object):
 
         all_images = None
         for (i, batch) in enumerate(image_dataloader):
-            if i == 1:
+            if i == 0:
                 all_images = np.array(batch) # First batch
             else:
                 all_images = np.concatenate((all_images, batch), axis=0)
