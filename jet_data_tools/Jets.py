@@ -27,8 +27,8 @@ class Jet(object):
 
         self.num_particles = None
 
-        # The particle data is stored as a 4xN array, where N is the number of particles
-        # The rows correspond to:
+        # The particle data is stored as a Nx4 array, where N is the number of particles
+        # The columns then correspond to:
         #      0: eta
         #      1: phi
         #      2: pt
@@ -38,15 +38,6 @@ class Jet(object):
 
     def get_num_particles(self):
         return self.num_particles
-
-    def get_eta(self):
-        return self.centroid_eta
-    
-    def get_phi(self):
-        return self.centroid_phi
-    
-    def get_total_pt(self):
-        return self.total_pt
     
     def get_particle_etas(self):
         return self.particle_data[:,0].view()
@@ -70,6 +61,7 @@ class Jet(object):
         particle_pts  = [p.pt  for p in particles]
         particle_charges = [p.charge() for p in particles]
 
+        # Each array being stacked has N elements
         jet.particle_data = np.stack([particle_etas, particle_phis, particle_pts, particle_charges], axis=1)
         jet.total_pt     = sum(particle_pts)
 

@@ -94,9 +94,9 @@ def run_one_kappa(args:argparse.Namespace, directories:Directories,
         testing_image_directory = directories.output_image_directory("testing", kappa, preprocessing_detail_str)
         testing_label_directory = directories.output_label_directory("testing", kappa, preprocessing_detail_str)
         testing_dataset = MemmapDataset.datasets_from_memmaps(testing_image_directory, testing_label_directory)
-        
-        testing_batch_size        = args.batch_size
-        testing_images_dataloader = DataLoader(testing_dataset.just_images(), batch_size=testing_batch_size)
+
+        num_images = len(testing_dataset)
+        testing_images_dataloader = DataLoader(testing_dataset.just_images(), batch_size=num_images)
 
         cnn_model.evaluate(directories, data_details,
                             kappa, preprocessing_detail_str,

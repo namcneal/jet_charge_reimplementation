@@ -11,7 +11,7 @@ def plot_roc_and_sic(data_year:int, energy_gev:float, kappa:float,
                      nonzero_epsilon=1e-6):
     
     sort_order = np.argsort(signal_eff)
-    signal_eff = signal_eff[sort_order]
+    signal_eff     = signal_eff[sort_order]
     background_eff = background_eff[sort_order]
 
     ## ROC

@@ -206,20 +206,24 @@ class CNN(object):
                 image_dataloader:DataLoader,
                 labels:np.ndarray):
 
-        predicted_probability_is_down_quark = np.empty(len(labels))
+        all_images = None
         for (i, batch) in enumerate(image_dataloader):
-            batch_as_array = np.array(batch)
-            predicted_probability_is_down_quark[i*len(batch):(i+1)*len(batch)] = self.model.predict(batch_as_array)[:,1]
+            if i == 1:
+                all_images = np.array(batch) # First batch
+            else:
+                all_images = np.concatenate((all_images, batch), axis=0)
+        
+        predicted_probability_is_down_quark    = np.empty(len(labels))
+        predicted_probability_is_down_quark[:] = self.model.predict(all_images)[:,1]
         
         eval_dir  = directories.save_dir_for_kappa(jet_charge_kappa)
-
-        filename = self.efficiencies_filename(jet_charge_kappa, data_details, preprocessing_details)
+        filename  = self.efficiencies_filename(jet_charge_kappa, data_details, preprocessing_details)
         
         just_down_quark_labels = labels[:,1]
         down_quark_efficiency_roc_and_sic(data_details.data_year, data_details.energy_gev,
-                                    jet_charge_kappa,
-                                    predicted_probability_is_down_quark, just_down_quark_labels, 
-                                    eval_dir, filename)
+                                            jet_charge_kappa,
+                                            predicted_probability_is_down_quark, just_down_quark_labels, 
+                                            eval_dir, filename)
         
     def save(self, directories:Directories, data_details:DataDetails,
              jet_charge_kappa:float, preprocessing_details:str, training_history=None, plot_history=True):
